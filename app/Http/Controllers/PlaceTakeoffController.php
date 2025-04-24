@@ -22,14 +22,34 @@ class PlaceTakeoffController extends Controller
     /**
      * Store the takeoffs for a project.
      */
+
     public function store(Request $request, Project $project)
     {
-        // Validate the basic data
         $validator = Validator::make($request->all(), [
-            'places' => 'required|array|min:1',
+            'places' => 'required|array',
             'places.*' => 'required|string|max:255',
-            'has_top' => 'nullable|array',
-            'has_backsplash' => 'nullable|array',
+            'types' => 'nullable|array',
+            'types.*' => 'nullable|string',
+            'material_name' => 'nullable|array',
+            'material_name.*' => 'nullable|string|max:255',
+            'supplier' => 'nullable|array',
+            'supplier.*' => 'nullable|string|max:255',
+            'area' => 'nullable|array',
+            'area.*' => 'nullable|string|max:255',
+            'piece_number' => 'nullable|array',
+            'piece_number.*' => 'nullable|string|max:255',
+            'length' => 'nullable|array',
+            'length.*' => 'nullable|numeric',
+            'width' => 'nullable|array',
+            'width.*' => 'nullable|numeric',
+            'polished_edge_length' => 'nullable|array',
+            'polished_edge_length.*' => 'nullable|numeric',
+            'miter_edge_length' => 'nullable|array',
+            'miter_edge_length.*' => 'nullable|numeric',
+            'sink_cutout' => 'nullable|array',
+            'sink_cutout.*' => 'nullable|integer',
+            'cooktop_cutout' => 'nullable|array',
+            'cooktop_cutout.*' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
@@ -38,79 +58,38 @@ class PlaceTakeoffController extends Controller
                 ->withInput();
         }
 
-        // Process each place takeoff
-        foreach ($request->places as $index => $place) {
-            // Create the place takeoff
-            $placeTakeoff = $project->placeTakeoffs()->create([
+        $places = $request->input('places');
+        $types = $request->input('types', []);
+        
+        foreach ($places as $key => $place) {
+            $project->placeTakeoffs()->create([
                 'place' => $place,
+                'type' => $types[$key] ?? null,
+                'material_name' => $request->input("material_name.$key"),
+                'supplier' => $request->input("supplier.$key"),
+                'area' => $request->input("area.$key"),
+                'piece_number' => $request->input("piece_number.$key"),
+                'length' => $request->input("length.$key"),
+                'width' => $request->input("width.$key"),
+                'polished_edge_length' => $request->input("polished_edge_length.$key"),
+                'miter_edge_length' => $request->input("miter_edge_length.$key"),
+                'sink_cutout' => $request->input("sink_cutout.$key"),
+                'cooktop_cutout' => $request->input("cooktop_cutout.$key"),
             ]);
-
-            // Create top if selected
-            if (isset($request->has_top[$index]) && $request->has_top[$index] == '1') {
-                $topData = [
-                    'elevation' => $request->top_elevation[$index] ?? null,
-                    'detail' => $request->top_detail[$index] ?? null,
-                    'area' => $request->top_area[$index] ?? null,
-                    'color' => $request->top_color[$index] ?? null,
-                    'supplier_brand' => $request->top_supplier_brand[$index] ?? null,
-                    'type' => $request->top_type[$index] ?? null,
-                    'unit_qty' => $request->top_unit_qty[$index] ?? null,
-                    'thickness' => $request->top_thickness[$index] ?? null,
-                    'length_inches' => $request->top_length_inches[$index] ?? null,
-                    'width_inches' => $request->top_width_inches[$index] ?? null,
-                    'sqft_per_unit' => $request->top_sqft_per_unit[$index] ?? null,
-                    'total_sqft_counter_top' => $request->top_total_sqft_counter_top[$index] ?? null,
-                    'polished_edge_inches' => $request->top_polished_edge_inches[$index] ?? null,
-                    'polished_edge_lnft' => $request->top_polished_edge_lnft[$index] ?? null,
-                    'total_pol_edge_lnft' => $request->top_total_pol_edge_lnft[$index] ?? null,
-                    'lmnt_mtr_edge_inches' => $request->top_lmnt_mtr_edge_inches[$index] ?? null,
-                    'lmnt_mtr_edge_lnft' => $request->top_lmnt_mtr_edge_lnft[$index] ?? null,
-                    'total_lmn_mtr_edge_lnft' => $request->top_total_lmn_mtr_edge_lnft[$index] ?? null,
-                    'num_of_sinks_per_unit' => $request->top_num_of_sinks_per_unit[$index] ?? null,
-                    'total_sinks_per_unit' => $request->top_total_sinks_per_unit[$index] ?? null,
-                    'num_of_cook_tops_per_unit' => $request->top_num_of_cook_tops_per_unit[$index] ?? null,
-                ];
-                
-                $placeTakeoff->tops()->create($topData);
-            }
-
-            // Create backsplash if selected
-            if (isset($request->has_backsplash[$index]) && $request->has_backsplash[$index] == '1') {
-                $backsplashData = [
-                    'elevation' => $request->backsplash_elevation[$index] ?? null,
-                    'detail' => $request->backsplash_detail[$index] ?? null,
-                    'area' => $request->backsplash_area[$index] ?? null,
-                    'color' => $request->backsplash_color[$index] ?? null,
-                    'supplier_brand' => $request->backsplash_supplier_brand[$index] ?? null,
-                    'type' => $request->backsplash_type[$index] ?? null,
-                    'unit_qty' => $request->backsplash_unit_qty[$index] ?? null,
-                    'thickness' => $request->backsplash_thickness[$index] ?? null,
-                    'length_inches' => $request->backsplash_length_inches[$index] ?? null,
-                    'width_inches' => $request->backsplash_width_inches[$index] ?? null,
-                    'sqft_per_unit' => $request->backsplash_sqft_per_unit[$index] ?? null,
-                    'total_sqft_counter_top' => $request->backsplash_total_sqft_counter_top[$index] ?? null,
-                    'polished_edge_inches' => $request->backsplash_polished_edge_inches[$index] ?? null,
-                    'polished_edge_lnft' => $request->backsplash_polished_edge_lnft[$index] ?? null,
-                    'total_pol_edge_lnft' => $request->backsplash_total_pol_edge_lnft[$index] ?? null,
-                ];
-                
-                $placeTakeoff->backsplashes()->create($backsplashData);
-            }
         }
 
         return redirect()->route('projects.show', $project)
-            ->with('success', 'Place Takeoffs added successfully.');
+            ->with('success', 'Place takeoffs added successfully.');
     }
 
-    /**
-     * Display the specified takeoffs for a project.
-     */
-    public function show(Project $project)
-    {
-        $placeTakeoffs = $project->placeTakeoffs()->with(['tops', 'backsplashes'])->get();
-        return view('place-takeoffs.show', compact('project', 'placeTakeoffs'));
-    }
-
+        /**
+         * Display the specified takeoffs for a project.
+         */
+        public function show(Project $project)
+        {
+            $placeTakeoffs = $project->placeTakeoffs()->get();
+            return view('place-takeoffs.show', compact('project', 'placeTakeoffs'));
+        }
     /**
      * Remove all takeoffs for a project.
      */

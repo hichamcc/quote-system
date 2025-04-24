@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-10xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <div class="flex justify-between items-center mb-6">
@@ -43,55 +43,47 @@
                     @endif
 
                     @if($placeTakeoffs->count() > 0)
-                        <div class="space-y-8">
-                            @foreach($placeTakeoffs as $placeTakeoff)
-                                <div class="bg-white shadow overflow-hidden sm:rounded-lg border">
-                                    <div class="px-4 py-5 sm:px-6 bg-gray-50">
-                                        <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                            {{ $placeTakeoff->place }}
-                                        </h3>
-                                        <p class="mt-1 max-w-2xl text-sm text-gray-500">
-                                            Created on {{ $placeTakeoff->created_at->format('F d, Y') }}
-                                        </p>
-                                    </div>
-
-                                    <div class="border-t border-gray-200">
-                                        <div class="px-4 py-5 sm:px-6">
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                <!-- Top Details -->
-                                                @if($placeTakeoff->tops->count() > 0)
-                                                    <div class="bg-blue-50 p-4 rounded-lg">
-                                                        <h4 class="text-md font-medium text-gray-900 mb-2">Top Details</h4>
-                                                        <dl class="grid grid-cols-2 gap-x-4 gap-y-2">
-                                                            @foreach($placeTakeoff->tops->first()->getAttributes() as $attribute => $value)
-                                                                @if(!in_array($attribute, ['id', 'place_takeoff_id', 'created_at', 'updated_at']) && $value)
-                                                                    <dt class="text-sm font-medium text-gray-500">{{ ucwords(str_replace('_', ' ', $attribute)) }}</dt>
-                                                                    <dd class="text-sm text-gray-900">{{ $value }}</dd>
-                                                                @endif
-                                                            @endforeach
-                                                        </dl>
-                                                    </div>
-                                                @endif
-
-                                                <!-- Backsplash Details -->
-                                                @if($placeTakeoff->backsplashes->count() > 0)
-                                                    <div class="bg-green-50 p-4 rounded-lg">
-                                                        <h4 class="text-md font-medium text-gray-900 mb-2">Backsplash Details</h4>
-                                                        <dl class="grid grid-cols-2 gap-x-4 gap-y-2">
-                                                            @foreach($placeTakeoff->backsplashes->first()->getAttributes() as $attribute => $value)
-                                                                @if(!in_array($attribute, ['id', 'place_takeoff_id', 'created_at', 'updated_at']) && $value)
-                                                                    <dt class="text-sm font-medium text-gray-500">{{ ucwords(str_replace('_', ' ', $attribute)) }}</dt>
-                                                                    <dd class="text-sm text-gray-900">{{ $value }}</dd>
-                                                                @endif
-                                                            @endforeach
-                                                        </dl>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Place</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Piece #</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Length</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Width</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Polished Edge</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miter Edge</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sink C/O</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cooktop C/O</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($placeTakeoffs as $placeTakeoff)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $placeTakeoff->place }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->material_name ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->supplier ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->area ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->piece_number ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->length ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->width ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->polished_edge_length ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->miter_edge_length ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->sink_cutout ?? '0' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->cooktop_cutout ?? '0' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <div class="flex space-x-2 ">
+                                                   
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     @else
                         <div class="text-center py-8 text-gray-500">

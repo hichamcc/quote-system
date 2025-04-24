@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PlaceTakeoff extends Model
+class ProjectAttachment extends Model
 {
     use HasFactory;
 
@@ -16,22 +16,16 @@ class PlaceTakeoff extends Model
      */
     protected $fillable = [
         'project_id',
-        'place',
-        'type',
-        'material_name',
-        'supplier',
-        'area',
-        'piece_number',
-        'length',
-        'width',
-        'polished_edge_length',
-        'miter_edge_length',
-        'sink_cutout',
-        'cooktop_cutout',
+        'filename',
+        'path',
+        'original_filename',
+        'mime_type',
+        'size',
+        'description',
     ];
 
     /**
-     * Get the project that owns the place takeoff.
+     * Get the project that owns the attachment.
      */
     public function project()
     {

@@ -53,4 +53,16 @@ Route::middleware(['auth', \App\Http\Middleware\ProjectAccessMiddleware::class])
         Route::get('{project}/takeoffs', [PlaceTakeoffController::class, 'show'])->name('takeoffs.show');
         Route::delete('{project}/takeoffs', [PlaceTakeoffController::class, 'destroy'])->name('takeoffs.destroy');
     });
+
+
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/projects/{project}/sinks', [App\Http\Controllers\SinksController::class, 'index'])->name('projects.sinks.index');
+        Route::get('/projects/{project}/sinks/create', [App\Http\Controllers\SinksController::class, 'create'])->name('projects.sinks.create');
+        Route::post('/projects/{project}/sinks', [App\Http\Controllers\SinksController::class, 'store'])->name('projects.sinks.store');
+        Route::get('/projects/{project}/sinks/{sink}/edit', [App\Http\Controllers\SinksController::class, 'edit'])->name('projects.sinks.edit');
+        Route::put('/projects/{project}/sinks/{sink}', [App\Http\Controllers\SinksController::class, 'update'])->name('projects.sinks.update');
+        Route::delete('/projects/{project}/sinks/{sink}', [App\Http\Controllers\SinksController::class, 'destroy_single'])->name('projects.sinks.destroy_single');
+        Route::delete('/projects/{project}/sinks', [App\Http\Controllers\SinksController::class, 'destroy'])->name('projects.sinks.destroy');
+    });
+
 require __DIR__.'/auth.php';

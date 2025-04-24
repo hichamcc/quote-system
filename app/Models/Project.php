@@ -47,13 +47,27 @@ class Project extends Model
         return $this->belongsTo(User::class);
     }
 
-
-       /**
+    /**
      * Get the place takeoffs for the project.
      */
     public function placeTakeoffs()
     {
         return $this->hasMany(PlaceTakeoff::class);
     }
-   
+    
+    /**
+     * Get the attachments for the project.
+     */
+    public function attachments()
+    {
+        return $this->hasMany(ProjectAttachment::class);
+    }
+
+    /**
+     * Get the sinks for the project.
+     */
+    public function sinks()
+    {
+        return $this->hasMany(Sink::class);
+    }
 }

@@ -15,10 +15,8 @@
                         </a>
                     </div>
 
-                    <form method="POST" action="{{ route('projects.store') }}" class="space-y-6">
+                    <form method="POST" action="{{ route('projects.store') }}" class="space-y-6" enctype="multipart/form-data">
                         @csrf
-
-                     
 
                         <!-- Project Name -->
                         <div class="mt-4">
@@ -113,6 +111,35 @@
                             </div>
                         </div>
 
+                        <!-- Attachments Section -->
+                        <div class="mt-6">
+                            <h3 class="text-lg font-medium text-gray-900">Project Attachments</h3>
+                            <p class="text-sm text-gray-500 mb-4">Upload relevant files for this project</p>
+                            
+                            <div class="space-y-4" id="attachments-container">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 border p-4 rounded">
+                                    <div class="md:col-span-3">
+                                        <x-label for="attachments[]">File</x-label>
+                                        <input type="file" name="attachments[]" id="attachments" class="w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
+                                    </div>
+                                    <div>
+                                        <x-label for="descriptions[]">Description</x-label>
+                                        <x-input type="text" name="descriptions[]" placeholder="Optional description" />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <button type="button" id="add-more-attachments" class="text-sm text-indigo-600 hover:text-indigo-900">
+                                    + Add Another Attachment
+                                </button>
+                            </div>
+                            
+                            @error('attachments.*')
+                                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <div class="flex items-center justify-end mt-6">
                             <x-button type="submit">
                                 Create Project
@@ -123,4 +150,28 @@
             </div>
         </div>
     </div>
+
+    <!-- JavaScript for adding more attachment fields -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addMoreBtn = document.getElementById('add-more-attachments');
+            const container = document.getElementById('attachments-container');
+            
+            addMoreBtn.addEventListener('click', function() {
+                const newRow = document.createElement('div');
+                newRow.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 border p-4 rounded mt-2';
+                newRow.innerHTML = `
+                    <div class="md:col-span-3">
+                        <label class="block font-medium text-sm text-gray-700">File</label>
+                        <input type="file" name="attachments[]" class="w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700">Description</label>
+                        <input type="text" name="descriptions[]" placeholder="Optional description" class="w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
+                    </div>
+                `;
+                container.appendChild(newRow);
+            });
+        });
+    </script>
 </x-layouts.app>

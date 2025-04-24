@@ -15,10 +15,9 @@
                         </a>
                     </div>
 
-                    <form method="POST" action="{{ route('projects.update', $project) }}" class="space-y-6">
+                    <form method="POST" action="{{ route('projects.update', $project) }}" class="space-y-6" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
-
 
                         <!-- Project Name -->
                         <div class="mt-4">
@@ -113,6 +112,84 @@
                             </div>
                         </div>
 
+                        <!-- Existing Attachments Section -->
+                        @if($project->attachments->count() > 0)
+                            <div class="mt-6">
+                                <h3 class="text-lg font-medium text-gray-900">Existing Attachments</h3>
+                                <div class="mt-2 space-y-2">
+                                    @foreach($project->attachments as $attachment)
+                                        <div class="flex items-center justify-between p-3 border rounded">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="flex-shrink-0">
+                                                    @php
+                                                        $extension = pathinfo($attachment->original_filename, PATHINFO_EXTENSION);
+                                                        $iconClass = 'fas fa-file';
+                                                        
+                                                        if (in_array($extension, ['pdf'])) {
+                                                            $iconClass = 'fas fa-file-pdf';
+                                                        } elseif (in_array($extension, ['doc', 'docx'])) {
+                                                            $iconClass = 'fas fa-file-word';
+                                                        } elseif (in_array($extension, ['xls', 'xlsx'])) {
+                                                            $iconClass = 'fas fa-file-excel';
+                                                        } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                            $iconClass = 'fas fa-file-image';
+                                                        }
+                                                    @endphp
+                                                    <i class="{{ $iconClass }} text-gray-500 text-xl"></i>
+                                                </div>
+                                                <div>
+                                                    <a href="{{ Storage::url($attachment->path) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 font-medium">
+                                                        {{ $attachment->original_filename }}
+                                                    </a>
+                                                    @if($attachment->description)
+                                                        <p class="text-sm text-gray-500">{{ $attachment->description }}</p>
+                                                    @endif
+                                                    <p class="text-xs text-gray-400">{{ number_format($attachment->size / 1024, 2) }} KB</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex space-x-2">
+                                                <div class="flex items-center">
+                                                    <input type="checkbox" id="delete_attachment_{{ $attachment->id }}" name="delete_attachments[]" value="{{ $attachment->id }}" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                                                    <label for="delete_attachment_{{ $attachment->id }}" class="ml-2 text-sm text-red-600">
+                                                        Delete
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- New Attachments Section -->
+                        <div class="mt-6">
+                            <h3 class="text-lg font-medium text-gray-900">Add New Attachments</h3>
+                            <p class="text-sm text-gray-500 mb-4">Upload additional files for this project</p>
+                            
+                            <div class="space-y-4" id="attachments-container">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 border p-4 rounded">
+                                    <div class="md:col-span-3">
+                                        <x-label for="attachments[]">File</x-label>
+                                        <input type="file" name="attachments[]" class="w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
+                                    </div>
+                                    <div>
+                                        <x-label for="descriptions[]">Description</x-label>
+                                        <x-input type="text" name="descriptions[]" placeholder="Optional description" />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <button type="button" id="add-more-attachments" class="text-sm text-indigo-600 hover:text-indigo-900">
+                                    + Add Another Attachment
+                                </button>
+                            </div>
+                            
+                            @error('attachments.*')
+                                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <div class="flex items-center justify-end mt-6">
                             <x-button type="submit">
                                 Update Project
@@ -123,4 +200,28 @@
             </div>
         </div>
     </div>
+
+    <!-- JavaScript for adding more attachment fields -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addMoreBtn = document.getElementById('add-more-attachments');
+            const container = document.getElementById('attachments-container');
+            
+            addMoreBtn.addEventListener('click', function() {
+                const newRow = document.createElement('div');
+                newRow.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 border p-4 rounded mt-2';
+                newRow.innerHTML = `
+                    <div class="md:col-span-3">
+                        <label class="block font-medium text-sm text-gray-700">File</label>
+                        <input type="file" name="attachments[]" class="w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-sm text-gray-700">Description</label>
+                        <input type="text" name="descriptions[]" placeholder="Optional description" class="w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
+                    </div>
+                `;
+                container.appendChild(newRow);
+            });
+        });
+    </script>
 </x-layouts.app>
