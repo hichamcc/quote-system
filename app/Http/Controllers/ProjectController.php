@@ -56,6 +56,7 @@ public function store(Request $request)
     $validator = Validator::make($request->all(), [
         'user_id' => 'required|exists:users,id',
         'name' => 'required|string|max:255',
+        'project_type' => 'required|in:residential,contractor',
         'customer' => 'required|string|max:255',
         'email' => 'required|email|max:255',
         'phone' => 'nullable|string|max:20',
@@ -79,6 +80,9 @@ public function store(Request $request)
 
     // Create the project
     $project = Project::create($request->all());
+
+    // Set pricing factors based on project type
+    $project->setPricingFactors();
 
     // Handle attachments if any were uploaded
     if ($request->hasFile('attachments')) {
@@ -139,6 +143,7 @@ public function update(Request $request, Project $project)
 {
     $validator = Validator::make($request->all(), [
         'name' => 'required|string|max:255',
+        'project_type' => 'required|in:residential,contractor',
         'customer' => 'required|string|max:255',
         'email' => 'required|email|max:255',
         'phone' => 'nullable|string|max:20',
@@ -162,12 +167,20 @@ public function update(Request $request, Project $project)
             ->withInput();
     }
 
-    // Update the project
-    $project->update($request->only([
-        'name', 'customer', 'email', 'phone', 
-        'attention', 'address', 'architect',
-        'bid_date', 'plan_date', 'date_accepted'
-    ]));
+    $oldType = $project->project_type;
+        // Update the project
+        $project->update($request->only([
+            'name', 'project_type', 'customer', 'email', 'phone', 
+            'attention', 'address', 'architect',
+            'bid_date', 'plan_date', 'date_accepted'
+        ]));
+    
+    //$project->update($request->all());
+    
+    // If project type changed, update pricing factors
+    if ($oldType !== $project->project_type) {
+        $project->setPricingFactors();
+    }
 
     // Delete selected attachments if any
     if ($request->has('delete_attachments')) {

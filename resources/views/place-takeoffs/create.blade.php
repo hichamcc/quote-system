@@ -25,33 +25,33 @@
                                     <h3 class="text-lg font-medium text-gray-900">Place Takeoff #1</h3>
                                 </div>
 
-                                <!-- Place Selection -->
-                            <!-- Place details -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <!-- Place Name -->
-                                <div>
-                                    <x-label for="places_0">Place</x-label>
-                                    <x-input id="places_0" name="places[]" :value="old('places.0')" required />
-                                    @error('places.0')
-                                        <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                <!-- Place details -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <!-- AMG Job Number -->
+                                    <div>
+                                        <x-label for="amg_job_numbers_0">AMG Job #</x-label>
+                                        <x-input id="amg_job_numbers_0" name="amg_job_numbers[]" :value="old('amg_job_numbers.0')" required />
+                                        @error('amg_job_numbers.0')
+                                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
 
-                                <!-- Place Type -->
-                                <div>
-                                    <x-label for="types_0">Place Type</x-label>
-                                    <select id="types_0" name="types[]" class="rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full">
-                                        <option value="">Select a type</option>
-                                        <option value="Kitchen" {{ old('types.0') == 'Kitchen' ? 'selected' : '' }}>Kitchen</option>
-                                        <option value="Bathroom" {{ old('types.0') == 'Bathroom' ? 'selected' : '' }}>Bathroom</option>
-                                        <option value="Master Bath" {{ old('types.0') == 'Master Bath' ? 'selected' : '' }}>Master Bath</option>
-                                        <option value="Common Area" {{ old('types.0') == 'Common Area' ? 'selected' : '' }}>Common Area</option>
-                                    </select>
-                                    @error('types.0')
-                                        <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-                                    @enderror
+                                    <!-- Place Type -->
+                                    <div>
+                                        <x-label for="types_0">Place Type</x-label>
+                                        <select id="types_0" name="types[]" class="rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full">
+                                            <option value="">Select a type</option>
+                                            <option value="Kitchen" {{ old('types.0') == 'Kitchen' ? 'selected' : '' }}>Kitchen</option>
+                                            <option value="Bathroom" {{ old('types.0') == 'Bathroom' ? 'selected' : '' }}>Bathroom</option>
+                                            <option value="Master Bath" {{ old('types.0') == 'Master Bath' ? 'selected' : '' }}>Master Bath</option>
+                                            <option value="Common Area" {{ old('types.0') == 'Common Area' ? 'selected' : '' }}>Common Area</option>
+                                        </select>
+                                        @error('types.0')
+                                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
-                            </div>
+                                
                                 <!-- Material Details -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     <!-- Material Name -->
@@ -59,6 +59,15 @@
                                         <x-label for="material_name_0">Material Name</x-label>
                                         <x-input id="material_name_0" name="material_name[]" :value="old('material_name.0')" />
                                         @error('material_name.0')
+                                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <!-- Material Price -->
+                                    <div>
+                                        <x-label for="material_price_0">Material Price ($)</x-label>
+                                        <x-input id="material_price_0" name="material_price[]" type="number" step="0.01" :value="old('material_price.0')" />
+                                        @error('material_price.0')
                                             <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -179,13 +188,11 @@
                 // Update all IDs and names
                 template.querySelector('h3').textContent = `Place Takeoff #${takeoffCount}`;
                 
-                // Update place input
-                const placeInput = template.querySelector('[id^="places_"]');
-                placeInput.id = `places_${takeoffCount-1}`;
-                placeInput.name = `places[]`;
-                placeInput.value = '';
-
-
+                // Update AMG Job Number input
+                const jobNumberInput = template.querySelector('[id^="amg_job_numbers_"]');
+                jobNumberInput.id = `amg_job_numbers_${takeoffCount-1}`;
+                jobNumberInput.name = `amg_job_numbers[]`;
+                jobNumberInput.value = '';
 
                 // Update place type select
                 const typeSelect = template.querySelector('[id^="types_"]');
@@ -195,7 +202,7 @@
                 
                 // Update all other input fields
                 const inputFields = [
-                    'material_name', 'supplier', 'area', 'piece_number',
+                    'material_name', 'material_price', 'supplier', 'area', 'piece_number',
                     'length', 'width', 'polished_edge_length', 'miter_edge_length',
                     'sink_cutout', 'cooktop_cutout'
                 ];

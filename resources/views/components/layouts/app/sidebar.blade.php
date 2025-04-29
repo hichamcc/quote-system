@@ -24,6 +24,10 @@
                     <x-navlist.item before="phosphor-user" :href="route('admin.users.index')" :current="request()->routeIs('admin.users.index')">
                         {{ __('Users') }}
                     </x-navlist.item>
+
+                    <x-navlist.item before="phosphor-list" :href="route('pricing-factors.index')" :current="request()->routeIs('pricing-factors.index')">
+                        {{ __('Pricing factors') }}
+                    </x-navlist.item>
                 </x-navlist.group>
                 
             </x-navlist>

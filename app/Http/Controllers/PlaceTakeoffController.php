@@ -26,12 +26,14 @@ class PlaceTakeoffController extends Controller
     public function store(Request $request, Project $project)
     {
         $validator = Validator::make($request->all(), [
-            'places' => 'required|array',
-            'places.*' => 'required|string|max:255',
+            'amg_job_numbers' => 'required|array',
+            'amg_job_numbers.*' => 'required|string|max:255',
             'types' => 'nullable|array',
             'types.*' => 'nullable|string',
             'material_name' => 'nullable|array',
             'material_name.*' => 'nullable|string|max:255',
+            'material_price' => 'nullable|array',
+            'material_price.*' => 'nullable|numeric|min:0',
             'supplier' => 'nullable|array',
             'supplier.*' => 'nullable|string|max:255',
             'area' => 'nullable|array',
@@ -58,14 +60,15 @@ class PlaceTakeoffController extends Controller
                 ->withInput();
         }
 
-        $places = $request->input('places');
+        $amg_job_numbers = $request->input('amg_job_numbers');
         $types = $request->input('types', []);
         
-        foreach ($places as $key => $place) {
+        foreach ($amg_job_numbers as $key => $job) {
             $project->placeTakeoffs()->create([
-                'place' => $place,
+                'amg_job_number' => $job,
                 'type' => $types[$key] ?? null,
                 'material_name' => $request->input("material_name.$key"),
+                'material_price' => $request->input("material_price.$key"),  
                 'supplier' => $request->input("supplier.$key"),
                 'area' => $request->input("area.$key"),
                 'piece_number' => $request->input("piece_number.$key"),
@@ -81,6 +84,70 @@ class PlaceTakeoffController extends Controller
         return redirect()->route('projects.show', $project)
             ->with('success', 'Place takeoffs added successfully.');
     }
+
+
+    public function edit(Project $project, PlaceTakeoff $takeoff)
+{
+    // Ensure the takeoff belongs to the given project
+    if ($takeoff->project_id !== $project->id) {
+        return redirect()->route('projects.takeoffs.show', $project)
+            ->with('error', 'The specified takeoff does not belong to this project.');
+    }
+
+    return view('place-takeoffs.edit', [
+        'project' => $project,
+        'placeTakeoff' => $takeoff
+    ]);
+}
+
+
+    /**
+ * Update the specified place takeoff in storage.
+ */
+public function update(Request $request, Project $project, PlaceTakeoff $takeoff)
+{
+
+    $validator = Validator::make($request->all(), [
+        'amg_job_number' => 'required|string|max:255',
+        'type' => 'nullable|string|in:Kitchen,Bathroom,Master Bath,Common Area',
+        'material_name' => 'nullable|string|max:255',
+        'material_price' => 'nullable|numeric|min:0',
+        'supplier' => 'nullable|string|max:255',
+        'area' => 'nullable|string|max:255',
+        'piece_number' => 'nullable|string|max:255',
+        'length' => 'nullable|numeric',
+        'width' => 'nullable|numeric',
+        'polished_edge_length' => 'nullable|numeric',
+        'miter_edge_length' => 'nullable|numeric',
+        'sink_cutout' => 'nullable|integer',
+        'cooktop_cutout' => 'nullable|integer',
+    ]);
+
+    if ($validator->fails()) {
+        return redirect()->back()
+            ->withErrors($validator)
+            ->withInput();
+    }
+
+    $takeoff->update([
+        'amg_job_number' => $request->amg_job_number,
+        'type' => $request->type,
+        'material_name' => $request->material_name,
+        'material_price' => $request->material_price, 
+        'supplier' => $request->supplier,
+        'area' => $request->area,
+        'piece_number' => $request->piece_number,
+        'length' => $request->length,
+        'width' => $request->width,
+        'polished_edge_length' => $request->polished_edge_length,
+        'miter_edge_length' => $request->miter_edge_length,
+        'sink_cutout' => $request->sink_cutout,
+        'cooktop_cutout' => $request->cooktop_cutout,
+    ]);
+
+    return redirect()->route('projects.takeoffs.show', $project)
+        ->with('success', 'Place takeoff updated successfully.');
+}
 
         /**
          * Display the specified takeoffs for a project.
@@ -99,4 +166,20 @@ class PlaceTakeoffController extends Controller
         return redirect()->route('projects.show', $project)
             ->with('success', 'All Place Takeoffs deleted successfully.');
     }
+
+    public function destroy_single(Project $project, PlaceTakeoff $takeoff)
+        {
+            // Ensure the takeoff belongs to the given project
+            if ($takeoff->project_id !== $project->id) {
+                return redirect()->route('projects.takeoffs.show', $project)
+                    ->with('error', 'The specified takeoff does not belong to this project.');
+            }
+
+            // Delete the takeoff
+            $takeoff->delete();
+
+            // Redirect back with success message
+            return redirect()->route('projects.takeoffs.show', $project)
+                ->with('success', 'Takeoff deleted successfully.');
+        }
 }

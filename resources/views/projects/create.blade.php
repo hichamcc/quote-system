@@ -27,6 +27,18 @@
                             @enderror
                         </div>
 
+                        <!-- Project Type -->
+                        <div class="mt-4">
+                            <x-label for="project_type">Project Type</x-label>
+                            <select id="project_type" name="project_type" class="rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full">
+                                <option value="residential" {{ old('project_type') == 'residential' ? 'selected' : '' }}>Residential</option>
+                                <option value="contractor" {{ old('project_type') == 'contractor' ? 'selected' : '' }}>Contractor</option>
+                            </select>
+                            @error('project_type')
+                                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <!-- Customer -->
                         <div class="mt-4">
                             <x-label for="customer">Customer</x-label>

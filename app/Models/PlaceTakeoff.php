@@ -16,9 +16,10 @@ class PlaceTakeoff extends Model
      */
     protected $fillable = [
         'project_id',
-        'place',
+        'amg_job_number',
         'type',
         'material_name',
+        'material_price',
         'supplier',
         'area',
         'piece_number',

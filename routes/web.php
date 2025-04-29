@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PlaceTakeoffController;
+use App\Http\Controllers\PricingFactorController;
 
 use App\Http\Middleware\AdminMiddleware;
 
@@ -50,8 +51,14 @@ Route::middleware(['auth', \App\Http\Middleware\ProjectAccessMiddleware::class])
         // Place Takeoff routes (simplified)
         Route::get('{project}/takeoffs/create', [PlaceTakeoffController::class, 'create'])->name('takeoffs.create');
         Route::post('{project}/takeoffs', [PlaceTakeoffController::class, 'store'])->name('takeoffs.store');
+        Route::put('{project}/takeoffs/{takeoff}', [PlaceTakeoffController::class, 'update'])->name('takeoffs.update');
+
         Route::get('{project}/takeoffs', [PlaceTakeoffController::class, 'show'])->name('takeoffs.show');
         Route::delete('{project}/takeoffs', [PlaceTakeoffController::class, 'destroy'])->name('takeoffs.destroy');
+        Route::get('{project}/takeoffs/{takeoff}/edit', [PlaceTakeoffController::class, 'edit'])->name('takeoffs.edit');
+        Route::delete('{project}/takeoffs/{takeoff}', [PlaceTakeoffController::class, 'destroy_single'])
+        ->name('takeoffs.destroy_single');
+    
     });
 
 
@@ -63,6 +70,12 @@ Route::middleware(['auth', \App\Http\Middleware\ProjectAccessMiddleware::class])
         Route::put('/projects/{project}/sinks/{sink}', [App\Http\Controllers\SinksController::class, 'update'])->name('projects.sinks.update');
         Route::delete('/projects/{project}/sinks/{sink}', [App\Http\Controllers\SinksController::class, 'destroy_single'])->name('projects.sinks.destroy_single');
         Route::delete('/projects/{project}/sinks', [App\Http\Controllers\SinksController::class, 'destroy'])->name('projects.sinks.destroy');
+    });
+
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/pricing-factors', [PricingFactorController::class, 'index'])->name('pricing-factors.index');
+        Route::get('/pricing-factors/edit', [PricingFactorController::class, 'edit'])->name('pricing-factors.edit');
+        Route::put('/pricing-factors', [PricingFactorController::class, 'update'])->name('pricing-factors.update');
     });
 
 require __DIR__.'/auth.php';

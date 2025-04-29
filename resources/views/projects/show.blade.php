@@ -39,10 +39,18 @@
                                         <!-- Left Column -->
                                         <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
                                             <dt class="text-sm font-medium text-gray-500">
-                                                Client
+                                                Created by
                                             </dt>
                                             <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                                                 {{ $project->user->name }}
+                                            </dd>
+                                        </div>
+                                        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
+                                            <dt class="text-sm font-medium text-gray-500">
+                                                Type
+                                            </dt>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                {{ $project->project_type }}
                                             </dd>
                                         </div>
                                         
@@ -224,7 +232,7 @@
                                     <table class="min-w-full divide-y divide-gray-200">
                                         <thead class="bg-gray-50">
                                             <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Place</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AMG Job#</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
@@ -235,13 +243,13 @@
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miter Edge</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sink C/O</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cooktop C/O</th>
-                                                <th scope="col" class="hidden px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200">
                                             @foreach($project->placeTakeoffs as $placeTakeoff)
                                                 <tr>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $placeTakeoff->place }}</td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $placeTakeoff->amg_job_number }}</td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->material_name ?? 'N/A' }}</td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->supplier ?? 'N/A' }}</td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->area ?? 'N/A' }}</td>
@@ -252,9 +260,14 @@
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->miter_edge_length ?? 'N/A' }}</td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->sink_cutout ?? '0' }}</td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->cooktop_cutout ?? '0' }}</td>
-                                                    <td class="hidden px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         <div class="flex space-x-2 ">
-                                                           
+                                                            <a href="{{ route('projects.takeoffs.edit', ['project' => $project->id, 'takeoff' => $placeTakeoff->id]) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                                            <form method="POST" action="{{ route('projects.takeoffs.destroy_single', ['project' => $project->id, 'takeoff' => $placeTakeoff->id]) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this sink?');">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                                            </form>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -274,316 +287,18 @@
                         @endif
                     </div>
 
-                    <!-- Calculations Summary Section -->
-<div class="mt-8">
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-medium text-gray-900">Material Calculations</h3>
-    </div>
-    
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-        <div class="px-4 py-5 sm:p-6">
-            <!-- Calculation Table -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area SQFT</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Polished Edge LNFT</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miter Edge LNFT</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sink C/O</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cooktop C/O</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @php
-                            $roomTypes = $project->placeTakeoffs->pluck('type')->unique()->filter();
-                            $kitchenItems = $project->placeTakeoffs->where('type', 'Kitchen');
-                            $bath2Items = $project->placeTakeoffs->where('type', 'Bathroom');
-                            $masterBathItems = $project->placeTakeoffs->where('type', 'Master Bath');
-                            $commonAreaItems = $project->placeTakeoffs->where('type', 'Common Area');
-                            
-                            // Helper function to calculate square feet
-                            function calculateSqft($length, $width) {
-                                return ($length && $width) ? ($length * $width / 144) : 0;
-                            }
-                            
-                            // Helper function to convert inches to linear feet
-                            function inchesToLinearFeet($inches) {
-                                return $inches ? ($inches / 12) : 0;
-                            }
-                        @endphp
-                        
-                        <!-- Kitchen Rows -->
-                        @foreach($kitchenItems as $index => $item)
-                            <tr class="{{ $index % 2 === 0 ? 'bg-yellow-50' : 'bg-yellow-100' }}">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    KITCHEN {{ $index + 1 }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(calculateSqft($item->length, $item->width), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(inchesToLinearFeet($item->polished_edge_length), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(inchesToLinearFeet($item->miter_edge_length), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->sink_cutout ?? 0 }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->cooktop_cutout ?? 0 }}
-                                </td>
-                            </tr>
-                        @endforeach
-                        
-                        @if($kitchenItems->count() > 0)
-                            <tr class="bg-yellow-200 font-bold">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    KITCHEN TOTAL
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($kitchenItems->sum(function($item) { 
-                                        return calculateSqft($item->length, $item->width);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($kitchenItems->sum(function($item) { 
-                                        return inchesToLinearFeet($item->polished_edge_length);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($kitchenItems->sum(function($item) { 
-                                        return inchesToLinearFeet($item->miter_edge_length);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ $kitchenItems->sum('sink_cutout') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ $kitchenItems->sum('cooktop_cutout') }}
-                                </td>
-                            </tr>
-                        @endif
-
-                        <!-- Bathroom Rows -->
-                        @foreach($bath2Items as $index => $item)
-                            <tr class="{{ $index % 2 === 0 ? 'bg-blue-50' : 'bg-blue-100' }}">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    BATH {{ $index + 1 }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(calculateSqft($item->length, $item->width), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(inchesToLinearFeet($item->polished_edge_length), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(inchesToLinearFeet($item->miter_edge_length), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->sink_cutout ?? 0 }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->cooktop_cutout ?? 0 }}
-                                </td>
-                            </tr>
-                        @endforeach
-                        
-                        @if($bath2Items->count() > 0)
-                            <tr class="bg-blue-200 font-bold">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    BATH TOTAL
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($bath2Items->sum(function($item) { 
-                                        return calculateSqft($item->length, $item->width);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($bath2Items->sum(function($item) { 
-                                        return inchesToLinearFeet($item->polished_edge_length);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($bath2Items->sum(function($item) { 
-                                        return inchesToLinearFeet($item->miter_edge_length);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ $bath2Items->sum('sink_cutout') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ $bath2Items->sum('cooktop_cutout') }}
-                                </td>
-                            </tr>
-                        @endif
-
-                        <!-- Master Bath Rows -->
-                        @foreach($masterBathItems as $index => $item)
-                            <tr class="{{ $index % 2 === 0 ? 'bg-purple-50' : 'bg-purple-100' }}">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    MASTER BATH {{ $index === 0 ? '' : ($index + 1) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(calculateSqft($item->length, $item->width), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(inchesToLinearFeet($item->polished_edge_length), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(inchesToLinearFeet($item->miter_edge_length), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->sink_cutout ?? 0 }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->cooktop_cutout ?? 0 }}
-                                </td>
-                            </tr>
-                        @endforeach
-                        
-                        @if($masterBathItems->count() > 0)
-                            <tr class="bg-purple-200 font-bold">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    MASTER BATH TOTAL
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($masterBathItems->sum(function($item) { 
-                                        return calculateSqft($item->length, $item->width);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($masterBathItems->sum(function($item) { 
-                                        return inchesToLinearFeet($item->polished_edge_length);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($masterBathItems->sum(function($item) { 
-                                        return inchesToLinearFeet($item->miter_edge_length);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ $masterBathItems->sum('sink_cutout') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ $masterBathItems->sum('cooktop_cutout') }}
-                                </td>
-                            </tr>
-                        @endif
-
-                        <!-- Common Area Rows if any -->
-                        @foreach($commonAreaItems as $index => $item)
-                            <tr class="{{ $index % 2 === 0 ? 'bg-green-50' : 'bg-green-100' }}">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    COMMON AREA {{ $index + 1 }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(calculateSqft($item->length, $item->width), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(inchesToLinearFeet($item->polished_edge_length), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ number_format(inchesToLinearFeet($item->miter_edge_length), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->sink_cutout ?? 0 }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $item->cooktop_cutout ?? 0 }}
-                                </td>
-                            </tr>
-                        @endforeach
-                        
-                        @if($commonAreaItems->count() > 0)
-                            <tr class="bg-green-200 font-bold">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    COMMON AREA TOTAL
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($commonAreaItems->sum(function($item) { 
-                                        return calculateSqft($item->length, $item->width);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($commonAreaItems->sum(function($item) { 
-                                        return inchesToLinearFeet($item->polished_edge_length);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ number_format($commonAreaItems->sum(function($item) { 
-                                        return inchesToLinearFeet($item->miter_edge_length);
-                                    }), 2) }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ $commonAreaItems->sum('sink_cutout') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                    {{ $commonAreaItems->sum('cooktop_cutout') }}
-                                </td>
-                            </tr>
-                        @endif
-                        
-                        <!-- Grand Total -->
-                        <tr class="bg-gray-200 font-bold">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                GRAND TOTAL
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                {{ number_format($project->placeTakeoffs->sum(function($item) { 
-                                    return calculateSqft($item->length, $item->width);
-                                }), 2) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                {{ number_format($project->placeTakeoffs->sum(function($item) { 
-                                    return inchesToLinearFeet($item->polished_edge_length);
-                                }), 2) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                {{ number_format($project->placeTakeoffs->sum(function($item) { 
-                                    return inchesToLinearFeet($item->miter_edge_length);
-                                }), 2) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                {{ $project->placeTakeoffs->sum('sink_cutout') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                                {{ $project->placeTakeoffs->sum('cooktop_cutout') }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Formula Legend -->
-            <div class="mt-4 p-3 border rounded-md bg-gray-50">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">Calculation Formulas:</h4>
-                <ul class="text-xs text-gray-600 space-y-1">
-                    <li><span class="font-medium">Area SQFT</span> = (Length × Width) / 144</li>
-                    <li><span class="font-medium">Polished Edge LNFT</span> = Polished Edge Length / 12</li>
-                    <li><span class="font-medium">Miter Edge LNFT</span> = Miter Edge Length / 12</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
                     <!-- Sinks Section -->
                     <div class="mt-8">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-900">Sinks</h3>
                             @if($project->sinks->count() > 0)
                             <div>
-                              
+                                
                                 <a href="{{ route('projects.sinks.create', $project) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
                                     Add Sinks
                                 </a>
                             </div>
-                              
+                                
                             @else
                                 <a href="{{ route('projects.sinks.create', $project) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
                                     Add Sinks
@@ -651,6 +366,447 @@
                         @endif
                     </div>
 
+               <!-- Calculations Summary Section -->
+                    <div class="mt-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Material Calculations</h3>
+                        </div>
+                        
+                        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <!-- Calculation Table -->
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area SQFT</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Polished Edge LNFT</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miter Edge LNFT</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sink C/O</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cooktop C/O</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            @php
+                                                // Helper functions
+                                                function calculateSqft($length, $width) {
+                                                    return ($length && $width) ? ($length * $width / 144) : 0;
+                                                }
+                                                
+                                                function inchesToLinearFeet($inches) {
+                                                    return $inches ? ($inches / 12) : 0;
+                                                }
+                                                
+                                                // Get all takeoffs grouped by type
+                                                $takeoffsByType = $project->placeTakeoffs->groupBy('type');
+                                                
+                                                // Type color mapping (can be extended for new types)
+                                                $typeColors = [
+                                                    'Kitchen' => ['row' => 'bg-yellow-50', 'altRow' => 'bg-yellow-100', 'total' => 'bg-yellow-200'],
+                                                    'Bathroom' => ['row' => 'bg-blue-50', 'altRow' => 'bg-blue-100', 'total' => 'bg-blue-200'],
+                                                    'Master Bath' => ['row' => 'bg-purple-50', 'altRow' => 'bg-purple-100', 'total' => 'bg-purple-200'],
+                                                    'Common Area' => ['row' => 'bg-green-50', 'altRow' => 'bg-green-100', 'total' => 'bg-green-200'],
+                                                    // Default colors for any new types
+                                                    'default' => ['row' => 'bg-gray-50', 'altRow' => 'bg-gray-100', 'total' => 'bg-gray-200']
+                                                ];
+                                                
+                                                function getColors($type, $typeColors) {
+                                                    return $typeColors[$type] ?? $typeColors['default'];
+                                                }
+                                            @endphp
+                                            
+                                            @foreach($takeoffsByType as $type => $items)
+                                                <!-- Individual items of this type -->
+                                                @foreach($items as $index => $item)
+                                                    @php 
+                                                        $colors = getColors($type, $typeColors);
+                                                        $bgClass = $index % 2 === 0 ? $colors['row'] : $colors['altRow'];
+                                                    @endphp
+                                                    
+                                                    <tr class="{{ $bgClass }}">
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                            {{ $type }} {{ $items->count() > 1 ? ($index + 1) : '' }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                            {{ number_format(calculateSqft($item->length, $item->width), 2) }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                            {{ number_format(inchesToLinearFeet($item->polished_edge_length), 2) }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                            {{ number_format(inchesToLinearFeet($item->miter_edge_length), 2) }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                            {{ $item->sink_cutout ?? 0 }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                            {{ $item->cooktop_cutout ?? 0 }}
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                                
+                                                <!-- Total row for this type -->
+                                                @if($items->count() > 0)
+                                                    @php $colors = getColors($type, $typeColors); @endphp
+                                                    <tr class="{{ $colors['total'] }} font-bold">
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                            {{ strtoupper($type) }} TOTAL
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                            {{ number_format($items->sum(function($item) { 
+                                                                return calculateSqft($item->length, $item->width);
+                                                            }), 2) }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                            {{ number_format($items->sum(function($item) { 
+                                                                return inchesToLinearFeet($item->polished_edge_length);
+                                                            }), 2) }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                            {{ number_format($items->sum(function($item) { 
+                                                                return inchesToLinearFeet($item->miter_edge_length);
+                                                            }), 2) }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                            {{ $items->sum('sink_cutout') }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                            {{ $items->sum('cooktop_cutout') }}
+                                                        </td>
+                                                    </tr>
+                                                @endif
+                                            @endforeach
+                                            
+                                            <!-- Grand Total -->
+                                            <tr class="bg-gray-200 font-bold">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                    GRAND TOTAL
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                    {{ number_format($project->placeTakeoffs->sum(function($item) { 
+                                                        return calculateSqft($item->length, $item->width);
+                                                    }), 2) }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                    {{ number_format($project->placeTakeoffs->sum(function($item) { 
+                                                        return inchesToLinearFeet($item->polished_edge_length);
+                                                    }), 2) }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                    {{ number_format($project->placeTakeoffs->sum(function($item) { 
+                                                        return inchesToLinearFeet($item->miter_edge_length);
+                                                    }), 2) }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                    {{ $project->placeTakeoffs->sum('sink_cutout') }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                                    {{ $project->placeTakeoffs->sum('cooktop_cutout') }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Formula Legend -->
+                                <div class="hidden mt-4 p-3 border rounded-md bg-gray-50">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-2">Calculation Formulas:</h4>
+                                    <ul class="text-xs text-gray-600 space-y-1">
+                                        <li><span class="font-medium">Area SQFT</span> = (Length × Width) / 144</li>
+                                        <li><span class="font-medium">Polished Edge LNFT</span> = Polished Edge Length / 12</li>
+                                        <li><span class="font-medium">Miter Edge LNFT</span> = Miter Edge Length / 12</li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Materials Usage Summary -->
+                                @if($project->placeTakeoffs->count() > 0 && $project->placeTakeoffs->whereNotNull('material_name')->count() > 0)
+                                    <div class="mt-6">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Materials Usage Summary:</h4>
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
+                                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+                                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total SQFT</th>
+                                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Areas Used</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @php
+                                                        $materialGroups = $project->placeTakeoffs
+                                                            ->whereNotNull('material_name')
+                                                            ->groupBy('material_name');
+                                                    @endphp
+                                                    
+                                                    @foreach($materialGroups as $materialName => $items)
+                                                        <tr class="{{ $loop->index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                                {{ $materialName }}
+                                                            </td>
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                {{ $items->pluck('supplier')->unique()->filter()->implode(', ') ?: 'N/A' }}
+                                                            </td>
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                {{ number_format($items->sum(function($item) { 
+                                                                    return calculateSqft($item->length, $item->width);
+                                                                }), 2) }}
+                                                            </td>
+                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                                {{ $items->pluck('type')->unique()->implode(', ') }}
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Calculation Section -->
+                    <div class="mt-8">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Project Pricing Calculation</h3>
+                        
+                        @php
+                         
+                            
+                            // Get all takeoffs grouped by type
+                            $takeoffsByType = $project->placeTakeoffs->groupBy('type');
+                            
+                            // Initialize totals
+                            $totalSqft = 0;
+                            $totalMaterialCost = 0;
+                            $totalFabricationCost = 0;
+                            $totalEdgePolishCost = 0;
+                            $totalMiterCost = 0;
+                            $totalSinkCutoutCost = 0;
+                            $totalCooktopCutoutCost = 0;
+                            $totalTemplateCost = 0;
+                            $totalInstallationCost = 0;
+                            
+                            // Arrays to store calculations by type
+                            $calculations = [];
+                        @endphp
+
+                        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SQFT</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fabrication</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edge Polish</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miter</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sink C/O</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cooktop C/O</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Template</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Install</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach($takeoffsByType as $type => $takeoffs)
+                                            @php
+                                                $typeTotalSqft = 0;
+                                                $typeTotalMaterialCost = 0;
+                                                $typeTotalFabricationCost = 0;
+                                                $typeTotalEdgePolishCost = 0;
+                                                $typeTotalMiterCost = 0;
+                                                $typeTotalSinkCutoutCost = 0;
+                                                $typeTotalCooktopCutoutCost = 0;
+                                                $typeTotalTemplateCost = 0;
+                                                $typeTotalInstallationCost = 0;
+                                                
+                                                foreach($takeoffs as $takeoff) {
+                                                    $sqft = calculateSqft($takeoff->length, $takeoff->width);
+                                                    $typeTotalSqft += $sqft;
+                                                    
+                                                    $materialCost = $sqft * $project->calculateSqftCost($takeoff->material_price ?? 0);
+                                                    $typeTotalMaterialCost += $materialCost;
+                                                    
+                                                    $fabricationCost = $project->calculateFabricationCost($sqft);
+                                                    $typeTotalFabricationCost += $fabricationCost;
+                                                    
+                                                    $edgePolishCost = $project->calculateEdgePolishCost(inchesToLinearFeet($takeoff->polished_edge_length));
+                                                    $typeTotalEdgePolishCost += $edgePolishCost;
+                                                    
+                                                    $miterCost = $project->calculateMiterCost(inchesToLinearFeet($takeoff->miter_edge_length));
+                                                    $typeTotalMiterCost += $miterCost;
+                                                    
+                                                    $sinkCutoutCost = $project->calculateSinkCutoutCost($takeoff->sink_cutout ?? 0);
+                                                    $typeTotalSinkCutoutCost += $sinkCutoutCost;
+                                                    
+                                                    $cooktopCutoutCost = $project->calculateCooktopCutoutCost($takeoff->cooktop_cutout ?? 0);
+                                                    $typeTotalCooktopCutoutCost += $cooktopCutoutCost;
+                                                    
+                                                    $templateCost = $project->calculateTemplateCost($sqft);
+                                                    $typeTotalTemplateCost += $templateCost;
+                                                    
+                                                    $installationCost = $project->calculateInstallationCost($sqft);
+                                                    $typeTotalInstallationCost += $installationCost;
+                                                }
+                                                
+                                                $typeSubtotal = $typeTotalMaterialCost + $typeTotalFabricationCost + $typeTotalEdgePolishCost + 
+                                                            $typeTotalMiterCost + $typeTotalSinkCutoutCost + $typeTotalCooktopCutoutCost + 
+                                                            $typeTotalTemplateCost + $typeTotalInstallationCost;
+                                                    
+                                                // Add to global totals
+                                                $totalSqft += $typeTotalSqft;
+                                                $totalMaterialCost += $typeTotalMaterialCost;
+                                                $totalFabricationCost += $typeTotalFabricationCost;
+                                                $totalEdgePolishCost += $typeTotalEdgePolishCost;
+                                                $totalMiterCost += $typeTotalMiterCost;
+                                                $totalSinkCutoutCost += $typeTotalSinkCutoutCost;
+                                                $totalCooktopCutoutCost += $typeTotalCooktopCutoutCost;
+                                                $totalTemplateCost += $typeTotalTemplateCost;
+                                                $totalInstallationCost += $typeTotalInstallationCost;
+                                                
+                                                // Store calculations for this type
+                                                $calculations[$type] = [
+                                                    'sqft' => $typeTotalSqft,
+                                                    'material' => $typeTotalMaterialCost,
+                                                    'fabrication' => $typeTotalFabricationCost,
+                                                    'edge_polish' => $typeTotalEdgePolishCost,
+                                                    'miter' => $typeTotalMiterCost,
+                                                    'sink_cutout' => $typeTotalSinkCutoutCost,
+                                                    'cooktop_cutout' => $typeTotalCooktopCutoutCost,
+                                                    'template' => $typeTotalTemplateCost,
+                                                    'installation' => $typeTotalInstallationCost,
+                                                    'subtotal' => $typeSubtotal
+                                                ];
+                                            @endphp
+                                            <tr class="{{ $loop->index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $type }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($typeTotalSqft, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalMaterialCost, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalFabricationCost, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalEdgePolishCost, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalMiterCost, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalSinkCutoutCost, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalCooktopCutoutCost, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalTemplateCost, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalInstallationCost, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($typeSubtotal, 2) }}</td>
+                                            </tr>
+                                        @endforeach
+                                        
+                                        @php
+                                            $subtotal = $totalMaterialCost + $totalFabricationCost + $totalEdgePolishCost + 
+                                                    $totalMiterCost + $totalSinkCutoutCost + $totalCooktopCutoutCost + 
+                                                    $totalTemplateCost + $totalInstallationCost;
+                                                    
+                                            $overhead = $project->calculateOverhead($subtotal);
+                                            $profit = $project->calculateProfit($subtotal + $overhead);
+                                            $total = $subtotal + $overhead + $profit;
+                                            
+                                            // Add sink prices from sinks table
+                                            $totalSinkPrice = $project->sinks->sum(function($sink) {
+                                                return $sink->price * $sink->quantity;
+                                            });
+                                            
+                                            $grandTotal = $total + $totalSinkPrice;
+                                        @endphp
+                                        
+                                        <!-- Totals Row -->
+                                        <tr class="bg-gray-200">
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">TOTALS</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ number_format($totalSqft, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalMaterialCost, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalFabricationCost, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalEdgePolishCost, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalMiterCost, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalSinkCutoutCost, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalCooktopCutoutCost, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalTemplateCost, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalInstallationCost, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($subtotal, 2) }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                
+                                <!-- Final Calculation Summary -->
+                                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    <div class="col-span-2 hidden">
+                                        <h4 class="text-md font-medium text-gray-900 mb-2">Calculation Factors ({{ ucfirst($project->project_type) }})</h4>
+                                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                            <div class="p-3 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-600">Fabrication:</span>
+                                                <p class="font-medium">${{ $project->factor_fabrication }}</p>
+                                            </div>
+                                            <div class="p-3 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-600">Edge Polish:</span>
+                                                <p class="font-medium">${{ $project->factor_edge_polish }}</p>
+                                            </div>
+                                            <div class="p-3 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-600">Miter:</span>
+                                                <p class="font-medium">${{ $project->factor_miter }}</p>
+                                            </div>
+                                            <div class="p-3 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-600">Sink C/O:</span>
+                                                <p class="font-medium">${{ $project->factor_sink_cutout }}</p>
+                                            </div>
+                                            <div class="p-3 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-600">Cooktop C/O:</span>
+                                                <p class="font-medium">${{ $project->factor_cooktop_cutout }}</p>
+                                            </div>
+                                            <div class="p-3 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-600">Template:</span>
+                                                <p class="font-medium">${{ $project->factor_template }}</p>
+                                            </div>
+                                            <div class="p-3 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-600">Installation:</span>
+                                                <p class="font-medium">${{ $project->factor_installation }}</p>
+                                            </div>
+                                            <div class="p-3 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-600">Waste:</span>
+                                                <p class="font-medium">{{ $project->factor_waste }}%</p>
+                                            </div>
+                                            <div class="p-3 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-600">Overhead:</span>
+                                                <p class="font-medium">{{ $project->factor_overhead }}%</p>
+                                            </div>
+                                            <div class="p-3 bg-gray-50 rounded">
+                                                <span class="text-sm text-gray-600">Profit:</span>
+                                                <p class="font-medium">{{ $project->factor_profit }}%</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="text-md font-medium text-gray-900 mb-2">Final Price</h4>
+                                        <div class="bg-gray-50 rounded p-4">
+                                            <div class="flex justify-between border-b py-2">
+                                                <span>Subtotal:</span>
+                                                <span>${{ number_format($subtotal, 2) }}</span>
+                                            </div>
+                                            <div class="flex justify-between border-b py-2">
+                                                <span>Overhead ({{ $project->factor_overhead }}%):</span>
+                                                <span>${{ number_format($overhead, 2) }}</span>
+                                            </div>
+                                            <div class="flex justify-between border-b py-2">
+                                                <span>Profit ({{ $project->factor_profit }}%):</span>
+                                                <span>${{ number_format($profit, 2) }}</span>
+                                            </div>
+                                            <div class="flex justify-between border-b py-2">
+                                                <span>Sinks:</span>
+                                                <span>${{ number_format($totalSinkPrice, 2) }}</span>
+                                            </div>
+                                            <div class="flex justify-between font-bold text-lg py-2">
+                                                <span>GRAND TOTAL:</span>
+                                                <span>${{ number_format($grandTotal, 2) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="mt-8 flex space-x-3">
                         <a href="{{ route('projects.edit', $project) }}" class="inline-flex items-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700 active:bg-yellow-900 focus:outline-none focus:border-yellow-900 focus:ring ring-yellow-300 disabled:opacity-25 transition ease-in-out duration-150">

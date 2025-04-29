@@ -47,7 +47,7 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Place</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AMG job#</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
@@ -64,7 +64,7 @@
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     @foreach($placeTakeoffs as $placeTakeoff)
                                         <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $placeTakeoff->place }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $placeTakeoff->amg_job_number }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->material_name ?? 'N/A' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->supplier ?? 'N/A' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->area ?? 'N/A' }}</td>
@@ -77,7 +77,12 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->cooktop_cutout ?? '0' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 <div class="flex space-x-2 ">
-                                                   
+                                                    <a href="{{ route('projects.takeoffs.edit', ['project' => $project->id, 'takeoff' => $placeTakeoff->id]) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                                    <form method="POST" action="{{ route('projects.takeoffs.destroy_single', ['project' => $project->id, 'takeoff' => $placeTakeoff->id]) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this sink?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                                    </form>
                                                 </div>
                                             </td>
                                         </tr>
