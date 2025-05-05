@@ -587,13 +587,14 @@
                             $totalCooktopCutoutCost = 0;
                             $totalTemplateCost = 0;
                             $totalInstallationCost = 0;
-                            
+                            $totalOverhead = 0;
                             // Arrays to store calculations by type
                             $calculations = [];
                         @endphp
 
                         <div class="bg-white shadow overflow-hidden sm:rounded-lg">
                             <div class="px-4 py-5 sm:p-6">
+                               <!-- Pricing Calculation Table with Overhead Column -->
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                         <tr>
@@ -608,6 +609,8 @@
                                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Template</th>
                                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Install</th>
                                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Overhead</th>
+                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cost</th>
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
@@ -656,6 +659,12 @@
                                                             $typeTotalMiterCost + $typeTotalSinkCutoutCost + $typeTotalCooktopCutoutCost + 
                                                             $typeTotalTemplateCost + $typeTotalInstallationCost;
                                                     
+                                                // Calculate overhead for this type
+                                                $typeOverhead = $project->calculateOverhead($typeSubtotal);
+                                                
+                                                // Calculate total cost (subtotal + overhead)
+                                                $typeTotalCost = $typeSubtotal + $typeOverhead;
+                                                    
                                                 // Add to global totals
                                                 $totalSqft += $typeTotalSqft;
                                                 $totalMaterialCost += $typeTotalMaterialCost;
@@ -666,6 +675,7 @@
                                                 $totalCooktopCutoutCost += $typeTotalCooktopCutoutCost;
                                                 $totalTemplateCost += $typeTotalTemplateCost;
                                                 $totalInstallationCost += $typeTotalInstallationCost;
+                                                $totalOverhead += $typeOverhead;
                                                 
                                                 // Store calculations for this type
                                                 $calculations[$type] = [
@@ -678,7 +688,9 @@
                                                     'cooktop_cutout' => $typeTotalCooktopCutoutCost,
                                                     'template' => $typeTotalTemplateCost,
                                                     'installation' => $typeTotalInstallationCost,
-                                                    'subtotal' => $typeSubtotal
+                                                    'subtotal' => $typeSubtotal,
+                                                    'overhead' => $typeOverhead,
+                                                    'total_cost' => $typeTotalCost
                                                 ];
                                             @endphp
                                             <tr class="{{ $loop->index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
@@ -692,7 +704,9 @@
                                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalCooktopCutoutCost, 2) }}</td>
                                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalTemplateCost, 2) }}</td>
                                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalInstallationCost, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($typeSubtotal, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeSubtotal, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeOverhead, 2) }}</td>
+                                                <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($typeTotalCost, 2) }}</td>
                                             </tr>
                                         @endforeach
                                         
@@ -702,8 +716,9 @@
                                                     $totalTemplateCost + $totalInstallationCost;
                                                     
                                             $overhead = $project->calculateOverhead($subtotal);
-                                            $profit = $project->calculateProfit($subtotal + $overhead);
-                                            $total = $subtotal + $overhead + $profit;
+                                            $totalCost = $subtotal + $overhead;
+                                            $profit = $project->calculateProfit($totalCost);
+                                            $total = $totalCost + $profit;
                                             
                                             // Add sink prices from sinks table
                                             $totalSinkPrice = $project->sinks->sum(function($sink) {
@@ -726,9 +741,193 @@
                                             <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalTemplateCost, 2) }}</td>
                                             <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalInstallationCost, 2) }}</td>
                                             <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($subtotal, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($overhead, 2) }}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalCost, 2) }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
+
+
+                                <!-- Price Per SQFT Analysis Cards -->
+                                <div class="mt-8">
+                                    <h4 class="text-md font-medium text-gray-900 mb-4">Price Analysis by Area Type</h4>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        @php
+                                            // Define a color palette that we can cycle through for different types
+                                            $colorPalette = [
+                                                ['bg' => 'bg-yellow-50', 'header' => 'bg-yellow-200'],
+                                                ['bg' => 'bg-blue-50', 'header' => 'bg-blue-200'],
+                                                ['bg' => 'bg-purple-50', 'header' => 'bg-purple-200'],
+                                                ['bg' => 'bg-green-50', 'header' => 'bg-green-200'],
+                                                ['bg' => 'bg-indigo-50', 'header' => 'bg-indigo-200'],
+                                                ['bg' => 'bg-red-50', 'header' => 'bg-red-200'],
+                                                ['bg' => 'bg-orange-50', 'header' => 'bg-orange-200'],
+                                                ['bg' => 'bg-teal-50', 'header' => 'bg-teal-200'],
+                                                ['bg' => 'bg-pink-50', 'header' => 'bg-pink-200'],
+                                                // Add more colors as needed
+                                            ];
+                                            
+                                            // Keep track of which types have been assigned colors
+                                            $typeColorMap = [];
+                                            $colorIndex = 0;
+                                        @endphp
+                                        
+                                        @foreach($calculations as $type => $calc)
+                                            @php
+                                                // Skip if no square footage
+                                                if ($calc['sqft'] <= 0) continue;
+                                                
+                                                // Calculate price per square foot
+                                                $pricePerSqft = $calc['total_cost'] / $calc['sqft'];
+                                                
+                                                // Calculate profit for this area
+                                                $areaProfit = $project->calculateProfit($calc['total_cost']);
+                                                
+                                                // Calculate price per square foot with profit
+                                                $pricePerSqftWithProfit = ($calc['total_cost'] + $areaProfit) / $calc['sqft'];
+                                                
+                                                // Assign a color to this type if it doesn't have one yet
+                                                if (!isset($typeColorMap[$type])) {
+                                                    $typeColorMap[$type] = $colorPalette[$colorIndex % count($colorPalette)];
+                                                    $colorIndex++;
+                                                }
+                                                
+                                                $cardColor = $typeColorMap[$type]['bg'];
+                                                $headerColor = $typeColorMap[$type]['header'];
+                                            @endphp
+                                            
+                                            <div class="rounded-lg shadow overflow-hidden">
+                                                <div class="{{ $headerColor }} px-4 py-2">
+                                                    <h5 class="font-medium text-gray-900">{{ $type }}</h5>
+                                                </div>
+                                                <div class="{{ $cardColor }} p-4">
+                                                    <div class="space-y-3">
+                                                        <div>
+                                                            <p class="text-sm text-gray-600">Total Area:</p>
+                                                            <p class="text-lg font-semibold">{{ number_format($calc['sqft'], 2) }} SQFT</p>
+                                                        </div>
+                                                        
+                                                        <div class="border-t pt-3">
+                                                            <p class="text-sm text-gray-600">Cost Breakdown:</p>
+                                                            <div class="grid grid-cols-2 gap-2 mt-2">
+                                                                <div class="text-right">
+                                                                    <p class="text-xs text-gray-500">Subtotal:</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p class="text-xs font-medium">${{ number_format($calc['subtotal'], 2) }}</p>
+                                                                </div>
+                                                                
+                                                                <div class="text-right">
+                                                                    <p class="text-xs text-gray-500">Overhead ({{ $project->factor_overhead }}%):</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p class="text-xs font-medium">${{ number_format($calc['overhead'], 2) }}</p>
+                                                                </div>
+                                                                
+                                                                <div class="text-right">
+                                                                    <p class="text-xs text-gray-500">Total Cost:</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p class="text-xs font-medium">${{ number_format($calc['total_cost'], 2) }}</p>
+                                                                </div>
+                                                                
+                                                                <div class="text-right">
+                                                                    <p class="text-xs text-gray-500">Profit ({{ $project->factor_profit }}%):</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p class="text-xs font-medium">${{ number_format($areaProfit, 2) }}</p>
+                                                                </div>
+                                                                
+                                                                <div class="text-right">
+                                                                    <p class="text-xs text-gray-500">Total with Profit:</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p class="text-xs font-medium">${{ number_format($calc['total_cost'] + $areaProfit, 2) }}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="border-t pt-3 grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <p class="text-sm text-gray-600 mb-1">Price per SQFT:</p>
+                                                                <p class="text-xl font-bold text-indigo-600">${{ number_format($pricePerSqft, 2) }}</p>
+                                                                <p class="text-xs text-gray-500">Total Cost / SQFT</p>
+                                                            </div>
+                                                            
+                                                            <div>
+                                                                <p class="text-sm text-gray-600 mb-1">Retail Price per SQFT:</p>
+                                                                <p class="text-xl font-bold text-green-600">${{ number_format($pricePerSqftWithProfit, 2) }}</p>
+                                                                <p class="text-xs text-gray-500">With Profit</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                        
+                                        <!-- Overall Project Card -->
+                                        @php
+                                            // Calculate overall project metrics
+                                            $overallPricePerSqft = $totalSqft > 0 ? $totalCost / $totalSqft : 0;
+                                            $overallPricePerSqftWithProfit = $totalSqft > 0 ? ($totalCost + $profit) / $totalSqft : 0;
+                                        @endphp
+                                        
+                                        <div class="rounded-lg shadow overflow-hidden">
+                                            <div class="bg-gray-700 text-white px-4 py-2">
+                                                <h5 class="font-medium">PROJECT OVERVIEW</h5>
+                                            </div>
+                                            <div class="bg-gray-100 p-4">
+                                                <div class="space-y-3">
+                                                    <div>
+                                                        <p class="text-sm text-gray-600">Total Project Area:</p>
+                                                        <p class="text-lg font-semibold">{{ number_format($totalSqft, 2) }} SQFT</p>
+                                                    </div>
+                                                    
+                                                    <div class="border-t pt-3">
+                                                        <p class="text-sm text-gray-600">Project Pricing:</p>
+                                                        <div class="grid grid-cols-2 gap-2 mt-2">
+                                                            <div class="text-right">
+                                                                <p class="text-xs text-gray-500">Total Cost:</p>
+                                                            </div>
+                                                            <div>
+                                                                <p class="text-xs font-medium">${{ number_format($totalCost, 2) }}</p>
+                                                            </div>
+                                                            
+                                                            <div class="text-right">
+                                                                <p class="text-xs text-gray-500">With Profit:</p>
+                                                            </div>
+                                                            <div>
+                                                                <p class="text-xs font-medium">${{ number_format($totalCost + $profit, 2) }}</p>
+                                                            </div>
+                                                            
+                                                            <div class="text-right">
+                                                                <p class="text-xs text-gray-500">With Sinks:</p>
+                                                            </div>
+                                                            <div>
+                                                                <p class="text-xs font-medium">${{ number_format($grandTotal, 2) }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="border-t pt-3 grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <p class="text-sm text-gray-600 mb-1">Average Price per SQFT:</p>
+                                                            <p class="text-xl font-bold text-indigo-600">${{ number_format($overallPricePerSqft, 2) }}</p>
+                                                            <p class="text-xs text-gray-500">Total Cost / SQFT</p>
+                                                        </div>
+                                                        
+                                                        <div>
+                                                            <p class="text-sm text-gray-600 mb-1">Retail Price per SQFT:</p>
+                                                            <p class="text-xl font-bold text-green-600">${{ number_format($overallPricePerSqftWithProfit, 2) }}</p>
+                                                            <p class="text-xs text-gray-500">With Profit</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 
                                 <!-- Final Calculation Summary -->
                                 <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -788,6 +987,10 @@
                                             <div class="flex justify-between border-b py-2">
                                                 <span>Overhead ({{ $project->factor_overhead }}%):</span>
                                                 <span>${{ number_format($overhead, 2) }}</span>
+                                            </div>
+                                            <div class="flex justify-between border-b py-2">
+                                                <span>Total Cost:</span>
+                                                <span>${{ number_format($totalCost, 2) }}</span>
                                             </div>
                                             <div class="flex justify-between border-b py-2">
                                                 <span>Profit ({{ $project->factor_profit }}%):</span>
