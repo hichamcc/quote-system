@@ -15,6 +15,22 @@
                         </a>
                     </div>
 
+                    <div class="mt-4 flex space-x-3">
+                        <button id="show-summary-btn" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Show Summary
+                        </button>
+                        
+                        <a href="{{ route('project.generate-pdf', $project->id) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring focus:ring-blue-300 disabled:opacity-25 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Generate PDF
+                        </a>
+                    </div>
+
                     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
                         <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
                             <div>
@@ -45,6 +61,17 @@
                                                 {{ $project->user->name }}
                                             </dd>
                                         </div>
+
+                                        <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
+                                            <dt class="text-sm font-medium text-gray-500">
+                                                Created at
+                                            </dt>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                {{ $project->created_at->format('F d, Y \a\t h:i A') }}
+                                            </dd>
+                                        </div>
+
+                                        
                                         <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
                                             <dt class="text-sm font-medium text-gray-500">
                                                 Type
@@ -62,6 +89,13 @@
                                                 {{ $project->customer }}
                                             </dd>
                                         </div>
+                                        
+                                    </dl>
+                                </div>
+                                
+                                <div>
+                                    <dl>
+                                        <!-- Right Column -->
                                         
                                         <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
                                             <dt class="text-sm font-medium text-gray-500">
@@ -81,16 +115,8 @@
                                             </dd>
                                         </div>
                                         
-                                        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
-                                            <dt class="text-sm font-medium text-gray-500">
-                                                Attention
-                                            </dt>
-                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                {{ $project->attention ?? 'Not specified' }}
-                                            </dd>
-                                        </div>
                                         
-                                        <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
+                                        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
                                             <dt class="text-sm font-medium text-gray-500">
                                                 Address
                                             </dt>
@@ -98,49 +124,8 @@
                                                 {{ $project->address ?? 'Not specified' }}
                                             </dd>
                                         </div>
-                                    </dl>
-                                </div>
-                                
-                                <div>
-                                    <dl>
-                                        <!-- Right Column -->
-                                        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
-                                            <dt class="text-sm font-medium text-gray-500">
-                                                Architect
-                                            </dt>
-                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                {{ $project->architect ?? 'Not specified' }}
-                                            </dd>
-                                        </div>
                                         
                                         <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
-                                            <dt class="text-sm font-medium text-gray-500">
-                                                Bid Date
-                                            </dt>
-                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                {{ $project->bid_date ? $project->bid_date->format('F d, Y') : 'Not specified' }}
-                                            </dd>
-                                        </div>
-                                        
-                                        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
-                                            <dt class="text-sm font-medium text-gray-500">
-                                                Plan Date
-                                            </dt>
-                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                {{ $project->plan_date ? $project->plan_date->format('F d, Y') : 'Not specified' }}
-                                            </dd>
-                                        </div>
-                                        
-                                        <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
-                                            <dt class="text-sm font-medium text-gray-500">
-                                                Created at
-                                            </dt>
-                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                                {{ $project->created_at->format('F d, Y \a\t h:i A') }}
-                                            </dd>
-                                        </div>
-                                        
-                                        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg mb-4">
                                             <dt class="text-sm font-medium text-gray-500">
                                                 Last updated
                                             </dt>
@@ -1028,4 +1013,62 @@
             </div>
         </div>
     </div>
+
+
+    <!-- Summary Modal -->
+<div id="summary-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-5xl w-full mx-4 max-h-screen overflow-y-auto">
+        <div class="px-6 py-4 border-b flex justify-between items-center">
+            <h3 class="text-lg font-medium text-gray-900">Project Summary</h3>
+            <button id="close-modal" class="text-gray-400 hover:text-gray-500">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="p-6" id="summary-content">
+            <!-- Summary content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('summary-modal');
+        const showBtn = document.getElementById('show-summary-btn');
+        const closeBtn = document.getElementById('close-modal');
+        const summaryContent = document.getElementById('summary-content');
+        
+        showBtn.addEventListener('click', function() {
+            // Show loading indicator
+            summaryContent.innerHTML = '<div class="flex justify-center"><svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+            
+            // Show modal
+            modal.classList.remove('hidden');
+            
+            // Fetch summary content
+            fetch('{{ route('projects.summary-content', $project) }}')
+                .then(response => response.text())
+                .then(html => {
+                    summaryContent.innerHTML = html;
+                })
+                .catch(error => {
+                    summaryContent.innerHTML = '<div class="text-red-500">Error loading summary. Please try again.</div>';
+                    console.error('Error:', error);
+                });
+        });
+        
+        closeBtn.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+</script>
 </x-layouts.app>

@@ -70,12 +70,22 @@ Route::middleware(['auth', \App\Http\Middleware\ProjectAccessMiddleware::class])
         Route::put('/projects/{project}/sinks/{sink}', [App\Http\Controllers\SinksController::class, 'update'])->name('projects.sinks.update');
         Route::delete('/projects/{project}/sinks/{sink}', [App\Http\Controllers\SinksController::class, 'destroy_single'])->name('projects.sinks.destroy_single');
         Route::delete('/projects/{project}/sinks', [App\Http\Controllers\SinksController::class, 'destroy'])->name('projects.sinks.destroy');
+   
+        // Project summary routes
+        Route::get('/projects/{project}/summary-content', [App\Http\Controllers\ProjectController::class, 'summaryContent'])
+            ->name('projects.summary-content');
+        Route::get('/projects/{project}/print-summary', [App\Http\Controllers\ProjectController::class, 'printSummary'])
+            ->name('projects.print-summary');
+
+        Route::get('/projects/{id}/generate-pdf', [ProjectController::class, 'generatePdf'])->name('project.generate-pdf');
     });
 
     Route::middleware(['auth'])->group(function () {
         Route::get('/pricing-factors', [PricingFactorController::class, 'index'])->name('pricing-factors.index');
         Route::get('/pricing-factors/edit', [PricingFactorController::class, 'edit'])->name('pricing-factors.edit');
         Route::put('/pricing-factors', [PricingFactorController::class, 'update'])->name('pricing-factors.update');
+
+        
     });
 
 require __DIR__.'/auth.php';

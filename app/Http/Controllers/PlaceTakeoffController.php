@@ -26,8 +26,8 @@ class PlaceTakeoffController extends Controller
     public function store(Request $request, Project $project)
     {
         $validator = Validator::make($request->all(), [
-            'amg_job_numbers' => 'required|array',
-            'amg_job_numbers.*' => 'required|string|max:255',
+            'amg_job_numbers' => 'nullable|array',
+            'amg_job_numbers.*' => 'nullable|string|max:255',
             'types' => 'nullable|array',
             'types.*' => 'nullable|string',
             'material_name' => 'nullable|array',
@@ -60,10 +60,13 @@ class PlaceTakeoffController extends Controller
                 ->withInput();
         }
 
+
         $amg_job_numbers = $request->input('amg_job_numbers');
         $types = $request->input('types', []);
         
         foreach ($amg_job_numbers as $key => $job) {
+            if(!$job)
+            $job = "--";
             $project->placeTakeoffs()->create([
                 'amg_job_number' => $job,
                 'type' => $types[$key] ?? null,
@@ -108,7 +111,7 @@ public function update(Request $request, Project $project, PlaceTakeoff $takeoff
 {
 
     $validator = Validator::make($request->all(), [
-        'amg_job_number' => 'required|string|max:255',
+        'amg_job_number' => 'nullable|string|max:255',
         'type' => 'nullable|string|in:Kitchen,Bathroom,Master Bath,Common Area',
         'material_name' => 'nullable|string|max:255',
         'material_price' => 'nullable|numeric|min:0',
@@ -128,6 +131,10 @@ public function update(Request $request, Project $project, PlaceTakeoff $takeoff
             ->withErrors($validator)
             ->withInput();
     }
+
+    if(!$request->amg_job_number)
+        $request->amg_job_number = "--";
+
 
     $takeoff->update([
         'amg_job_number' => $request->amg_job_number,

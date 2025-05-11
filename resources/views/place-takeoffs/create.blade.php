@@ -30,7 +30,7 @@
                                     <!-- AMG Job Number -->
                                     <div>
                                         <x-label for="amg_job_numbers_0">AMG Job #</x-label>
-                                        <x-input id="amg_job_numbers_0" name="amg_job_numbers[]" :value="old('amg_job_numbers.0')" required />
+                                        <x-input id="amg_job_numbers_0" name="amg_job_numbers[]" :value="old('amg_job_numbers.0')" />
                                         @error('amg_job_numbers.0')
                                             <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                         @enderror
@@ -38,7 +38,7 @@
 
                                     <!-- Place Type -->
                                     <div>
-                                        <x-label for="types_0">Place Type</x-label>
+                                        <x-label for="types_0">Section Type</x-label>
                                         <select id="types_0" name="types[]" class="rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full">
                                             <option value="">Select a type</option>
                                             <option value="Kitchen" {{ old('types.0') == 'Kitchen' ? 'selected' : '' }}>Kitchen</option>
@@ -164,7 +164,7 @@
 
                         <div class="flex justify-between">
                             <button type="button" id="add-takeoff" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
-                                + Add Another Place Takeoff
+                                + Add Another Section 
                             </button>
                             
                             <x-button type="submit">

@@ -228,6 +228,70 @@ public function update(Request $request, Project $project)
         ->with('success', 'Project updated successfully.');
 }
 
+
+
+
+        /**
+         * Get the summary content for the modal
+         */
+        public function summaryContent(Project $project)
+        {
+            $takeoffsByType = $project->placeTakeoffs->groupBy('type');
+            $sinks = $project->sinks;
+            
+            // Calculate the totals (similar to what you're doing in the view)
+            // [Add your calculation code here]
+            
+            return view('projects.summary-content', compact('project', 'takeoffsByType', 'sinks'));
+        }
+
+            /**
+             * Generate a printable summary
+             */
+            public function printSummary(Project $project)
+            {
+                $takeoffsByType = $project->placeTakeoffs->groupBy('type');
+                $sinks = $project->sinks;
+                
+                return view('projects.print-summary', compact('project', 'takeoffsByType', 'sinks'));
+            }
+
+
+
+            /**
+                 * Generate a PDF of the project summary
+                 *
+                 * @param int $id
+                 * @return \Illuminate\Http\Response
+                 */
+                public function generatePdf($id)
+                {
+                    // Retrieve the project with necessary relationships
+                    $project = Project::with(['placeTakeoffs', 'sinks'])->findOrFail($id);
+                    
+                    // Group takeoffs by type
+                    $takeoffsByType = $project->placeTakeoffs->groupBy('type');
+                    
+                    // For sinks, make sure we can access them by area
+                    $sinks = $project->sinks;
+                    
+                    // Any other data preparation you need for the summary view...
+                    
+                    // Create PDF using dompdf
+                    $pdf = \PDF::loadView('projects.summary-pdf', [
+                        'project' => $project,
+                        'takeoffsByType' => $takeoffsByType,
+                        'sinks' => $sinks,
+                        // Add any other variables needed for the summary view
+                    ]);
+                    
+                    // Optional: Set paper size and orientation
+                    $pdf->setPaper('a4', 'portrait');
+                    
+                    // Download the PDF (alternatively, you can use ->stream() to display in browser)
+                    return $pdf->download($project->name . '_Summary_' . now()->format('Y-m-d') . '.pdf');
+                }
+
     /**
      * Remove the specified project from storage.
      */

@@ -68,7 +68,7 @@
                         </div>
 
                         <!-- Attention -->
-                        <div class="mt-4">
+                        <div class="mt-4 hidden">
                             <x-label for="attention">Attention</x-label>
                             <x-input id="attention" type="text" name="attention" :value="old('attention', $project->attention)" />
                             @error('attention')
@@ -86,7 +86,7 @@
                         </div>
 
                         <!-- Architect -->
-                        <div class="mt-4">
+                        <div class="mt-4 hidden">
                             <x-label for="architect">Architect</x-label>
                             <x-input id="architect" type="text" name="architect" :value="old('architect', $project->architect)" />
                             @error('architect')
@@ -95,7 +95,7 @@
                         </div>
 
                         <!-- Dates Section -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 hidden">
                             <!-- Bid Date -->
                             <div>
                                 <x-label for="bid_date">Bid Date</x-label>

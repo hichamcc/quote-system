@@ -25,7 +25,7 @@
                                 <!-- AMG Job Number -->
                                 <div>
                                     <x-label for="amg_job_number">AMG Job #</x-label>
-                                    <x-input id="amg_job_number" name="amg_job_number" :value="old('amg_job_number', $placeTakeoff->amg_job_number)" required />
+                                    <x-input id="amg_job_number" name="amg_job_number" :value="old('amg_job_number', $placeTakeoff->amg_job_number)"  />
                                     @error('amg_job_number')
                                         <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                     @enderror
@@ -33,7 +33,7 @@
 
                                 <!-- Place Type -->
                                 <div>
-                                    <x-label for="type">Place Type</x-label>
+                                    <x-label for="type">Section Type</x-label>
                                     <select id="type" name="type" class="rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full">
                                         <option value="">Select a type</option>
                                         <option value="Kitchen" {{ old('type', $placeTakeoff->type) == 'Kitchen' ? 'selected' : '' }}>Kitchen</option>
