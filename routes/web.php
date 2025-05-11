@@ -92,7 +92,7 @@ Route::middleware(['auth', \App\Http\Middleware\ProjectAccessMiddleware::class])
         Route::post('/projects/{id}/share', [ProjectController::class, 'generateShareLink'])->name('project.generate-share-link');
 
         // Public routes that don't require authentication
-        Route::prefix('public')->name('public.')->group(function () {
+        Route::prefix('shared')->name('shared.')->group(function () {
             // View the project summary with a share token
             Route::get('/summary/{token}', [ProjectController::class, 'publicSummary'])->name('summary');
             
