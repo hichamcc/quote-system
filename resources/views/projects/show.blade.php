@@ -29,6 +29,55 @@
                             </svg>
                             Generate PDF
                         </a>
+
+                            
+                            @if($project->share_token)
+                                <button 
+                                    type="button" 
+                                    onclick="copyToClipboard('{{ route('public.summary', $project->share_token) }}')"
+                                    class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring focus:ring-green-300 disabled:opacity-25 transition"
+                                    id="share-button"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                    </svg>
+                                    Copy Share Link
+                                </button>
+                            @else
+                                <form action="{{ route('project.generate-share-link', $project->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button 
+                                        type="submit" 
+                                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring focus:ring-green-300 disabled:opacity-25 transition"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                        </svg>
+                                        Create Share Link
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+
+                        <script>
+                            function copyToClipboard(text) {
+                                navigator.clipboard.writeText(text).then(function() {
+                                    const button = document.getElementById('share-button');
+                                    const originalText = button.innerHTML;
+                                    
+                                    button.innerHTML = `
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Copied!
+                                    `;
+                                    
+                                    setTimeout(function() {
+                                        button.innerHTML = originalText;
+                                    }, 2000);
+                                });
+                            }
+                        </script>
                     </div>
 
                     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -41,11 +90,7 @@
                                     Project details and information
                                 </p>
                             </div>
-                            <div>
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $project->date_accepted ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                    {{ $project->date_accepted ? 'Accepted on ' . $project->date_accepted->format('M d, Y') : 'Pending' }}
-                                </span>
-                            </div>
+
                         </div>
                         
                         <div class="border-t border-gray-200">

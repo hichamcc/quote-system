@@ -88,4 +88,16 @@ Route::middleware(['auth', \App\Http\Middleware\ProjectAccessMiddleware::class])
         
     });
 
+            // Route to generate a share token
+        Route::post('/projects/{id}/share', [ProjectController::class, 'generateShareLink'])->name('project.generate-share-link');
+
+        // Public routes that don't require authentication
+        Route::prefix('public')->name('public.')->group(function () {
+            // View the project summary with a share token
+            Route::get('/summary/{token}', [ProjectController::class, 'publicSummary'])->name('summary');
+            
+            // Generate a PDF from the public summary
+            Route::get('/summary/{token}/pdf', [ProjectController::class, 'publicGeneratePdf'])->name('generate-pdf');
+        });
+
 require __DIR__.'/auth.php';

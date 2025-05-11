@@ -37,18 +37,19 @@ class Project extends Model
         'factor_overhead',
         'factor_waste',
         'factor_profit',
+        'share_token',
+        'share_expires_at',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
+
+
     protected $casts = [
-        'bid_date' => 'date',
-        'plan_date' => 'date',
-        'date_accepted' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deposit_date' => 'datetime',
+        'share_expires_at' => 'datetime',
     ];
+    
 
     /**
      * Get the user that owns the project.
@@ -184,5 +185,43 @@ class Project extends Model
         $this->factor_profit = $pricingFactor->{$type . '_profit'};
         
         $this->save();
+    }
+
+
+
+    /**
+     * Generate a new share token for this project
+     * 
+     * @param int $expiryDays Number of days before the link expires
+     * @return string The generated token
+     */
+    public function generateShareToken($expiryDays = 30)
+    {
+        $this->share_token = (string) Str::uuid();
+        $this->share_expires_at = now()->addDays($expiryDays);
+        $this->save();
+        
+        return $this->share_token;
+    }
+
+    /**
+     * Check if the share token is valid
+     * 
+     * @return bool
+     */
+    public function hasValidShareToken()
+    {
+        return $this->share_token && 
+            ($this->share_expires_at === null || $this->share_expires_at->isFuture());
+    }
+
+    /**
+     * Get the public share URL for this project
+     * 
+     * @return string|null The share URL or null if no token exists
+     */
+    public function getShareUrl()
+    {
+        return $this->share_token ? route('public.summary', $this->share_token) : null;
     }
 }

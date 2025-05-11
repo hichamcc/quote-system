@@ -10,6 +10,7 @@ use App\Models\ProjectAttachment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProjectController extends Controller
 {
@@ -291,6 +292,97 @@ public function update(Request $request, Project $project)
                     // Download the PDF (alternatively, you can use ->stream() to display in browser)
                     return $pdf->download($project->name . '_Summary_' . now()->format('Y-m-d') . '.pdf');
                 }
+
+
+
+                /**
+             * Generate a unique share token for the project
+             *
+             * @param int $id
+             * @return \Illuminate\Http\RedirectResponse
+             */
+            public function generateShareLink($id)
+            {
+                $project = Project::findOrFail($id);
+                
+                // Generate a UUID for the share token
+                $project->share_token = (string) Str::uuid();
+                
+                // Set expiration date (30 days from now)
+                $project->share_expires_at = now()->addDays(30);
+                
+                $project->save();
+                
+                return back()->with('success', 'Share link generated successfully!');
+            }
+
+            /**
+             * Display the public summary view using a share token
+             *
+             * @param string $token
+             * @return \Illuminate\Http\Response
+             */
+            public function publicSummary($token)
+            {
+                // Find the project by share token
+                $project = Project::where('share_token', $token)
+                                ->where(function ($query) {
+                                    $query->whereNull('share_expires_at')
+                                        ->orWhere('share_expires_at', '>', now());
+                                })
+                                ->firstOrFail();
+                
+                // Load necessary relationships
+                $project->load(['placeTakeoffs', 'sinks']);
+                
+                // Group takeoffs by type
+                $takeoffsByType = $project->placeTakeoffs->groupBy('type');
+                
+                // Return the public summary view
+                return view('projects.public-summary', [
+                    'project' => $project,
+                    'takeoffsByType' => $takeoffsByType,
+                    'sinks' => $project->sinks,
+                    'isPublic' => true
+                ]);
+            }
+
+            /**
+             * Generate a PDF of the project summary from a public share link
+             *
+             * @param string $token
+             * @return \Illuminate\Http\Response
+             */
+            public function publicGeneratePdf($token)
+            {
+                // Find the project by share token
+                $project = Project::where('share_token', $token)
+                                ->where(function ($query) {
+                                    $query->whereNull('share_expires_at')
+                                        ->orWhere('share_expires_at', '>', now());
+                                })
+                                ->firstOrFail();
+                
+                // Load necessary relationships
+                $project->load(['placeTakeoffs', 'sinks']);
+                
+                // Group takeoffs by type
+                $takeoffsByType = $project->placeTakeoffs->groupBy('type');
+                
+                // Create PDF
+                $pdf = \PDF::loadView('projects.summary-pdf', [
+                    'project' => $project,
+                    'takeoffsByType' => $takeoffsByType,
+                    'sinks' => $project->sinks,
+                    'isPublic' => true
+                ]);
+                
+                // Set paper size and orientation
+                $pdf->setPaper('a4', 'portrait');
+                
+                // Download the PDF
+                return $pdf->download($project->name . '_Summary_' . now()->format('Y-m-d') . '.pdf');
+            }
 
     /**
      * Remove the specified project from storage.
