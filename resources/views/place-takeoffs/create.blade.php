@@ -163,9 +163,15 @@
                         </div>
 
                         <div class="flex justify-between">
-                            <button type="button" id="add-takeoff" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
-                                + Add Another Section 
-                            </button>
+                            <div class="space-x-2">
+                                <button type="button" id="add-takeoff" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                    + Add Another Section 
+                                </button>
+                                
+                                <button type="button" id="duplicate-takeoff" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                    Duplicate Last Entry
+                                </button>
+                            </div>
                             
                             <x-button type="submit">
                                 Save All Place Takeoffs
@@ -181,7 +187,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Add new takeoff
             let takeoffCount = 1;
+            
             document.getElementById('add-takeoff').addEventListener('click', function() {
+                addNewTakeoff();
+            });
+            
+            document.getElementById('duplicate-takeoff').addEventListener('click', function() {
+                duplicateLastTakeoff();
+            });
+            
+            function addNewTakeoff(valuesToCopy = null) {
                 takeoffCount++;
                 const template = document.querySelector('.takeoff-item').cloneNode(true);
                 
@@ -192,13 +207,25 @@
                 const jobNumberInput = template.querySelector('[id^="amg_job_numbers_"]');
                 jobNumberInput.id = `amg_job_numbers_${takeoffCount-1}`;
                 jobNumberInput.name = `amg_job_numbers[]`;
-                jobNumberInput.value = '';
+                jobNumberInput.value = valuesToCopy ? valuesToCopy.amgJobNumber : '';
 
                 // Update place type select
                 const typeSelect = template.querySelector('[id^="types_"]');
                 typeSelect.id = `types_${takeoffCount-1}`;
                 typeSelect.name = `types[]`;
-                typeSelect.selectedIndex = 0;
+                
+                if (valuesToCopy && valuesToCopy.type) {
+                    // Find and select the option with matching value
+                    Array.from(typeSelect.options).forEach(option => {
+                        if (option.value === valuesToCopy.type) {
+                            option.selected = true;
+                        } else {
+                            option.selected = false;
+                        }
+                    });
+                } else {
+                    typeSelect.selectedIndex = 0;
+                }
                 
                 // Update all other input fields
                 const inputFields = [
@@ -212,13 +239,40 @@
                     if (input) {
                         input.id = `${field}_${takeoffCount-1}`;
                         input.name = `${field}[]`;
-                        input.value = '';
+                        
+                        // If we have values to copy, set them for the specific fields
+                        if (valuesToCopy && valuesToCopy[field]) {
+                            input.value = valuesToCopy[field];
+                        } else {
+                            input.value = '';
+                        }
                     }
                 });
                 
                 // Add the new takeoff to the container
                 document.getElementById('takeoff-container').appendChild(template);
-            });
+            }
+            
+            function duplicateLastTakeoff() {
+                // Get the last takeoff element
+                const takeoffs = document.querySelectorAll('.takeoff-item');
+                if (takeoffs.length === 0) return;
+                
+                const lastTakeoff = takeoffs[takeoffs.length - 1];
+                
+                // Extract the values we want to copy
+                const valuesToCopy = {
+                    amgJobNumber: lastTakeoff.querySelector('[id^="amg_job_numbers_"]').value,
+                    type: lastTakeoff.querySelector('[id^="types_"]').value,
+                    material_name: lastTakeoff.querySelector('[id^="material_name_"]').value,
+                    material_price: lastTakeoff.querySelector('[id^="material_price_"]').value,
+                    supplier: lastTakeoff.querySelector('[id^="supplier_"]').value,
+                    area: lastTakeoff.querySelector('[id^="area_"]').value
+                };
+                
+                // Add a new takeoff with the copied values
+                addNewTakeoff(valuesToCopy);
+            }
         });
     </script>
 </x-layouts.app>
