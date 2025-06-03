@@ -239,11 +239,12 @@ public function update(Request $request, Project $project)
         {
             $takeoffsByType = $project->placeTakeoffs->groupBy('type');
             $sinks = $project->sinks;
-            
+            $addons = $project->addons; 
+
             // Calculate the totals (similar to what you're doing in the view)
             // [Add your calculation code here]
             
-            return view('projects.summary-content', compact('project', 'takeoffsByType', 'sinks'));
+            return view('projects.summary-content', compact('project', 'takeoffsByType', 'sinks', 'addons'));
         }
 
             /**
@@ -275,7 +276,8 @@ public function update(Request $request, Project $project)
                     
                     // For sinks, make sure we can access them by area
                     $sinks = $project->sinks;
-                    
+                    $addons = $project->addons; 
+
                     // Any other data preparation you need for the summary view...
                     
                     // Create PDF using dompdf
@@ -283,6 +285,7 @@ public function update(Request $request, Project $project)
                         'project' => $project,
                         'takeoffsByType' => $takeoffsByType,
                         'sinks' => $sinks,
+                        'addons'=> $addons
                         // Add any other variables needed for the summary view
                     ]);
                     
@@ -337,12 +340,15 @@ public function update(Request $request, Project $project)
                 
                 // Group takeoffs by type
                 $takeoffsByType = $project->placeTakeoffs->groupBy('type');
-                
+                $addons = $project->addons; 
+
                 // Return the public summary view
                 return view('projects.public-summary', [
                     'project' => $project,
                     'takeoffsByType' => $takeoffsByType,
                     'sinks' => $project->sinks,
+                    'addons'=> $addons,
+
                     'isPublic' => true
                 ]);
             }

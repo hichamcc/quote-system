@@ -224,4 +224,21 @@ class Project extends Model
     {
         return $this->share_token ? route('public.summary', $this->share_token) : null;
     }
+
+
+    /**
+     * Get the addons for the project.
+     */
+    public function addons()
+    {
+        return $this->hasMany(Addon::class);
+    }
+
+    /**
+     * Calculate total addons cost for the project
+     */
+    public function getTotalAddonsCostAttribute()
+    {
+        return $this->addons->sum('total_cost');
+    }
 }

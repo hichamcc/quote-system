@@ -148,8 +148,9 @@
                         $cooktopCutoutTotal + $sinkCutoutTotal + 
                         $polishedEdgesTotal + $miterEdgesTotal;
             
-            // Add to grand total
-            $grandTotal += $typeTotal;
+            // Get addons for this area type
+            $areaAddons = $addons->where('type', $type);
+            $areaAddonTotal = 0;
         @endphp
         
         <div class="mb-8">
@@ -200,17 +201,120 @@
                 </div>
             @endif
             
-            <!-- Sink details -->
-            @foreach($sinks->where('sink_area', $type) as $sink)
-                <div class="flex justify-between mb-1">
-                    <span>1 - {{ $sink->gauge ?? '' }} {{ $sink->material ?? '' }} {{ $sink->type ?? '' }} {{ $sink->model ?? '' }} {{ $sink->brand ?? '' }}</span>
-                    <span>${{ number_format($sink->price, 2) }}</span>
-                </div>
+            <!-- Addons for this area -->
+            @foreach($areaAddons as $addon)
                 @php
-                    $typeTotal += $sink->price;
-                    $grandTotal += $sink->price;
+                    $addonTotal = 0;
+                @endphp
+                
+                <!-- Sink Details -->
+                @if($addon->sink_model || $addon->sink_name)
+                    @php
+                        $sinkTotal = ($addon->sink_price ?? 0) * ($addon->sink_quantity ?? 1);
+                        $addonTotal += $sinkTotal;
+                        
+                        // Build sink description
+                        $sinkDescription = [];
+                        if($addon->sink_quantity && $addon->sink_quantity > 1) {
+                            $sinkDescription[] = $addon->sink_quantity;
+                        } else {
+                            $sinkDescription[] = '1';
+                        }
+                        
+                        if($addon->sink_name) {
+                            $sinkDescription[] = $addon->sink_name;
+                        }
+                        
+                        if($addon->sink_model) {
+                            $sinkDescription[] = $addon->sink_model;
+                        }
+                    @endphp
+                    <div class="flex justify-between mb-1">
+                        <span>{{ implode(' - ', $sinkDescription) }}</span>
+                        <span>${{ number_format($sinkTotal, 2) }}</span>
+                    </div>
+                @endif
+                
+                <!-- Bracket Details -->
+                @if($addon->bracket_model || $addon->bracket_name)
+                    @php
+                        $bracketTotal = ($addon->bracket_price ?? 0) * ($addon->bracket_quantity ?? 1);
+                        $addonTotal += $bracketTotal;
+                    @endphp
+                    <div class="flex justify-between mb-1">
+                        <span>{{ $addon->bracket_quantity ?? 1 }} - {{ $addon->bracket_name ?? $addon->bracket_model }}</span>
+                        <span>${{ number_format($bracketTotal, 2) }}</span>
+                    </div>
+                @endif
+                
+                <!-- Edge Service -->
+                @if($addon->edge && $addon->edge_type)
+                    @php
+                        // Calculate polished edge linear feet for this area type only
+                        $polishedLinearFeet = 0;
+                        if (isset($takeoffsByType[$type])) {
+                            foreach($takeoffsByType[$type] as $takeoff) {
+                                $polishedLinearFeet += inchesToLinearFeet($takeoff->polished_edge_length ?? 0);
+                            }
+                        }
+                        $edgeTotalCost = ($addon->edge_price ?? 0) * $polishedLinearFeet;
+                        $addonTotal += $edgeTotalCost;
+                    @endphp
+                    <div class="flex justify-between mb-1">
+                        <span>{{ number_format($polishedLinearFeet, 2) }} LF - {{ $addon->edge_type }} Edge @ ${{ number_format($addon->edge_price ?? 0, 2) }}/LF</span>
+                        <span>${{ number_format($edgeTotalCost, 2) }}</span>
+                    </div>
+                @endif
+                
+                <!-- Plumbing Service -->
+                @if($addon->plumbing)
+                    <div class="flex justify-between mb-1">
+                        <span>Plumbing Services</span>
+                        <span>${{ number_format($addon->plumbing_price ?? 0, 2) }}</span>
+                    </div>
+                    @php $addonTotal += $addon->plumbing_price ?? 0; @endphp
+                @endif
+                
+                <!-- Demo Service -->
+                @if($addon->demo)
+                    <div class="flex justify-between mb-1">
+                        <span>Demo Service</span>
+                        <span>${{ number_format($addon->demo_price ?? 0, 2) }}</span>
+                    </div>
+                    @php $addonTotal += $addon->demo_price ?? 0; @endphp
+                @endif
+                
+                <!-- Vein Exact Match Service -->
+                @if($addon->vein_exact_match)
+                    <div class="flex justify-between mb-1">
+                        <span>Vein Exact Match</span>
+                        <span>${{ number_format($addon->vein_exact_match_price ?? 0, 2) }}</span>
+                    </div>
+                    @php $addonTotal += $addon->vein_exact_match_price ?? 0; @endphp
+                @endif
+                
+                <!-- Electrical Cutout Service -->
+                @if($addon->electrical_cutout)
+                    @php
+                        $electricalUnitPrice = ($addon->electrical_cutout_price ?? 0);
+                        $electricalTotalCost = $electricalUnitPrice * ($addon->electrical_cutout_quantity ?? 1);
+                        $addonTotal += $electricalTotalCost;
+                    @endphp
+                    <div class="flex justify-between mb-1">
+                        <span>{{ $addon->electrical_cutout_quantity ?? 1 }} - Electrical Cutout(s) @ ${{ number_format($electricalUnitPrice, 2) }} each</span>
+                        <span>${{ number_format($electricalTotalCost, 2) }}</span>
+                    </div>
+                @endif
+                
+                @php
+                    $areaAddonTotal += $addonTotal;
                 @endphp
             @endforeach
+            
+            @php
+                $typeTotal += $areaAddonTotal;
+                $grandTotal += $typeTotal;
+            @endphp
             
             <!-- Subtotal for this area -->
             <div class="flex justify-between font-semibold mt-2 border-t pt-2">
@@ -220,31 +324,128 @@
         </div>
     @endforeach
     
-    <!-- Add sink costs not associated with specific areas -->
+    <!-- Addons not associated with specific areas -->
     @php
-        $unassignedSinks = $sinks->whereNotIn('sink_area', $takeoffsByType->keys());
-        $sinkTotal = $unassignedSinks->sum(function($sink) {
-            return $sink->price * ($sink->quantity ?? 1);
-        });
-        $grandTotal += $sinkTotal;
+        $unassignedAddons = $addons->whereNotIn('type', $takeoffsByType->keys());
+        $unassignedAddonTotal = 0;
     @endphp
     
-    @if($unassignedSinks->count() > 0)
+    @if($unassignedAddons->count() > 0)
         <div class="mb-8">
-            <h3 class="text-lg font-medium mb-2">Additional Sinks</h3>
+            <h3 class="text-lg font-medium mb-2">Additional Items</h3>
             
-            @foreach($unassignedSinks as $sink)
-                <div class="flex justify-between mb-1">
-                    <span>{{ $sink->quantity ?? 1 }} - {{ $sink->model }} {{ $sink->brand }}</span>
-                    <span>${{ number_format($sink->price * ($sink->quantity ?? 1), 2) }}</span>
-                </div>
+            @foreach($unassignedAddons as $addon)
+                @php
+                    $addonSubtotal = 0;
+                @endphp
+                
+                <!-- Sink Details -->
+                @if($addon->sink_model || $addon->sink_name)
+                    @php
+                        $sinkTotal = ($addon->sink_price ?? 0) * ($addon->sink_quantity ?? 1);
+                        $addonSubtotal += $sinkTotal;
+                        
+                        // Build sink description
+                        $sinkDescription = [];
+                        if($addon->sink_quantity && $addon->sink_quantity > 1) {
+                            $sinkDescription[] = $addon->sink_quantity;
+                        } else {
+                            $sinkDescription[] = '1';
+                        }
+                        
+                        if($addon->sink_name) {
+                            $sinkDescription[] = $addon->sink_name;
+                        }
+                        
+                        if($addon->sink_model) {
+                            $sinkDescription[] = $addon->sink_model;
+                        }
+                    @endphp
+                    <div class="flex justify-between mb-1">
+                        <span>{{ implode(' - ', $sinkDescription) }}</span>
+                        <span>${{ number_format($sinkTotal, 2) }}</span>
+                    </div>
+                @endif
+                
+                <!-- Bracket Details -->
+                @if($addon->bracket_model || $addon->bracket_name)
+                    @php
+                        $bracketTotal = ($addon->bracket_price ?? 0) * ($addon->bracket_quantity ?? 1);
+                        $addonSubtotal += $bracketTotal;
+                    @endphp
+                    <div class="flex justify-between mb-1">
+                        <span>{{ $addon->bracket_quantity ?? 1 }} - {{ $addon->bracket_name ?? $addon->bracket_model }}</span>
+                        <span>${{ number_format($bracketTotal, 2) }}</span>
+                    </div>
+                @endif
+                
+                <!-- Services -->
+                <!-- Services -->
+                @if($addon->edge && $addon->edge_type)
+                    @php
+                        // For unassigned addons, we can't calculate LF from takeoffs
+                        // So we'll need to use a stored LF value or default to 0
+                        // You may need to add an edge_linear_feet field to your addons table
+                        $edgeLinearFeet = $addon->edge_linear_feet ?? 0; // Add this field or calculate differently
+                        $edgeTotalCost = ($addon->edge_price ?? 0) * $edgeLinearFeet;
+                        $addonSubtotal += $edgeTotalCost;
+                    @endphp
+                    <div class="flex justify-between mb-1">
+                        <span>{{ number_format($edgeLinearFeet, 2) }} LF - {{ $addon->edge_type }} Edge @ ${{ number_format($addon->edge_price ?? 0, 2) }}/LF</span>
+                        <span>${{ number_format($edgeTotalCost, 2) }}</span>
+                    </div>
+                @endif
+                
+                @if($addon->plumbing)
+                    <div class="flex justify-between mb-1">
+                        <span>Plumbing Services</span>
+                        <span>${{ number_format($addon->plumbing_price ?? 0, 2) }}</span>
+                    </div>
+                    @php $addonSubtotal += $addon->plumbing_price ?? 0; @endphp
+                @endif
+                
+                @if($addon->demo)
+                    <div class="flex justify-between mb-1">
+                        <span>Demo Service</span>
+                        <span>${{ number_format($addon->demo_price ?? 0, 2) }}</span>
+                    </div>
+                    @php $addonSubtotal += $addon->demo_price ?? 0; @endphp
+                @endif
+                
+                @if($addon->vein_exact_match)
+                    <div class="flex justify-between mb-1">
+                        <span>Vein Exact Match</span>
+                        <span>${{ number_format($addon->vein_exact_match_price ?? 0, 2) }}</span>
+                    </div>
+                    @php $addonSubtotal += $addon->vein_exact_match_price ?? 0; @endphp
+                @endif
+                
+                @if($addon->electrical_cutout)
+                    @php
+                        $electricalUnitPrice = ($addon->electrical_cutout_price ?? 0);
+                        $electricalTotalCost = $electricalUnitPrice * ($addon->electrical_cutout_quantity ?? 1);
+                        $addonSubtotal += $electricalTotalCost;
+                    @endphp
+                    <div class="flex justify-between mb-1">
+                        <span>{{ $addon->electrical_cutout_quantity ?? 1 }} - Electrical Cutout(s) @ ${{ number_format($electricalUnitPrice, 2) }} each</span>
+                        <span>${{ number_format($electricalTotalCost, 2) }}</span>
+                    </div>
+                @endif
+                
+                @php
+                    $unassignedAddonTotal += $addonSubtotal;
+                @endphp
             @endforeach
             
             <div class="flex justify-between font-semibold mt-2 border-t pt-2">
                 <span>Subtotal</span>
-                <span>${{ number_format($sinkTotal, 2) }}</span>
+                <span>${{ number_format($unassignedAddonTotal, 2) }}</span>
             </div>
         </div>
+        
+        @php
+            $grandTotal += $unassignedAddonTotal;
+        @endphp
     @endif
     
     <!-- Final total -->

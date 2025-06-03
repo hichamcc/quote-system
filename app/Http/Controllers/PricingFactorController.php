@@ -1,27 +1,24 @@
 <?php
 
+// Update your existing PricingFactorController
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\PricingFactor;
+use App\Models\EdgeType;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class PricingFactorController extends Controller
 {
-    /**
-     * Display the pricing factors.
-     */
     public function index()
     {
         $pricingFactor = PricingFactor::first();
         $factorNames = PricingFactor::getFactorNames();
+        $edgeTypes = EdgeType::latest()->get();
         
-        return view('pricing-factors.index', compact('pricingFactor', 'factorNames'));
+        return view('pricing-factors.index', compact('pricingFactor', 'factorNames', 'edgeTypes'));
     }
 
-    /**
-     * Show the form for editing pricing factors.
-     */
     public function edit()
     {
         $pricingFactor = PricingFactor::first();
@@ -30,30 +27,68 @@ class PricingFactorController extends Controller
         return view('pricing-factors.edit', compact('pricingFactor', 'factorNames'));
     }
 
-    /**
-     * Update the pricing factors.
-     */
     public function update(Request $request)
     {
         $pricingFactor = PricingFactor::first();
         
+        // Validate all pricing factor fields including new service prices
         $rules = [];
         foreach (PricingFactor::getFactorNames() as $code => $name) {
-            $rules["residential_$code"] = 'required|numeric|min:0';
-            $rules["contractor_$code"] = 'required|numeric|min:0';
+            $rules['residential_' . $code] = 'required|numeric|min:0';
+            $rules['contractor_' . $code] = 'required|numeric|min:0';
         }
         
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $pricingFactor->update($request->only(array_keys($rules)));
-
+        $validated = $request->validate($rules);
+        
+        $pricingFactor->update($validated);
+        
         return redirect()->route('pricing-factors.index')
             ->with('success', 'Pricing factors updated successfully.');
+    }
+
+    // Edge Types methods
+    public function storeEdgeType(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:edge_types',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $data = $request->all();
+        $data['is_active'] = true; // Always set to true
+        $data['description'] = null; // Set description to null
+
+        EdgeType::create($data);
+
+        return redirect()->route('pricing-factors.index')
+            ->with('success', 'Edge type created successfully.');
+    }
+
+    public function updateEdgeType(Request $request, EdgeType $edgeType)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:edge_types,name,' . $edgeType->id,
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $data = $request->all();
+        $data['is_active'] = true; // Always keep active
+        $data['description'] = null; // Keep description null
+
+        $edgeType->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->route('pricing-factors.index')
+            ->with('success', 'Edge type updated successfully.');
+    }
+
+    public function destroyEdgeType(EdgeType $edgeType)
+    {
+        $edgeType->delete();
+        return redirect()->route('pricing-factors.index')
+            ->with('success', 'Edge type deleted successfully.');
     }
 }

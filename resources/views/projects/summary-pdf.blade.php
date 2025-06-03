@@ -273,19 +273,15 @@
                     $polishedEdgesTotal = 0;
                     $miterEdgesTotal = 0;
                 }
-                    
+                
                 // Calculate total for this area
                 $typeTotal = array_sum(array_column($materialsByType, 'cost')) + 
                             $cooktopCutoutTotal + $sinkCutoutTotal + 
                             $polishedEdgesTotal + $miterEdgesTotal;
-                            
-                // Add sink costs for this area
-                foreach($sinks->where('sink_area', $type) as $sink) {
-                    $typeTotal += $sink->price;
-                }
                 
-                // Add to grand total
-                $grandTotal += $typeTotal;
+                // Get addons for this area type
+                $areaAddons = $addons->where('type', $type);
+                $areaAddonTotal = 0;
             @endphp
             
             <div class="area-section">
@@ -336,13 +332,120 @@
                     </div>
                 @endif
                 
-                <!-- Sink details -->
-                @foreach($sinks->where('sink_area', $type) as $sink)
-                    <div class="line-item clearfix">
-                        <div class="line-item-left">1 - {{ $sink->gauge ?? '' }} {{ $sink->material ?? '' }} {{ $sink->type ?? '' }} {{ $sink->model ?? '' }} {{ $sink->brand ?? '' }}</div>
-                        <div class="line-item-right">${{ number_format($sink->price, 2) }}</div>
-                    </div>
+                <!-- Addons for this area -->
+                @foreach($areaAddons as $addon)
+                    @php
+                        $addonTotal = 0;
+                    @endphp
+                    
+                    <!-- Sink Details -->
+                    @if($addon->sink_model || $addon->sink_name)
+                        @php
+                            $sinkTotal = ($addon->sink_price ?? 0) * ($addon->sink_quantity ?? 1);
+                            $addonTotal += $sinkTotal;
+                            
+                            // Build sink description
+                            $sinkDescription = [];
+                            if($addon->sink_quantity && $addon->sink_quantity > 1) {
+                                $sinkDescription[] = $addon->sink_quantity;
+                            } else {
+                                $sinkDescription[] = '1';
+                            }
+                            
+                            if($addon->sink_name) {
+                                $sinkDescription[] = $addon->sink_name;
+                            }
+                            
+                            if($addon->sink_model) {
+                                $sinkDescription[] = $addon->sink_model;
+                            }
+                        @endphp
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">{{ implode(' - ', $sinkDescription) }}</div>
+                            <div class="line-item-right">${{ number_format($sinkTotal, 2) }}</div>
+                        </div>
+                    @endif
+                    
+                    <!-- Bracket Details -->
+                    @if($addon->bracket_model || $addon->bracket_name)
+                        @php
+                            $bracketTotal = ($addon->bracket_price ?? 0) * ($addon->bracket_quantity ?? 1);
+                            $addonTotal += $bracketTotal;
+                        @endphp
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">{{ $addon->bracket_quantity ?? 1 }} - {{ $addon->bracket_name ?? $addon->bracket_model }}</div>
+                            <div class="line-item-right">${{ number_format($bracketTotal, 2) }}</div>
+                        </div>
+                    @endif
+                    
+                    <!-- Edge Service -->
+                    @if($addon->edge && $addon->edge_type)
+                        @php
+                            // Calculate polished edge linear feet for this area type only
+                            $polishedLinearFeet = 0;
+                            if (isset($takeoffsByType[$type])) {
+                                foreach($takeoffsByType[$type] as $takeoff) {
+                                    $polishedLinearFeet += inchesToLinearFeet($takeoff->polished_edge_length ?? 0);
+                                }
+                            }
+                            $edgeTotalCost = ($addon->edge_price ?? 0) * $polishedLinearFeet;
+                            $addonTotal += $edgeTotalCost;
+                        @endphp
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">{{ number_format($polishedLinearFeet, 2) }} LF - {{ $addon->edge_type }} Edge @ ${{ number_format($addon->edge_price ?? 0, 2) }}/LF</div>
+                            <div class="line-item-right">${{ number_format($edgeTotalCost, 2) }}</div>
+                        </div>
+                    @endif
+                    
+                    <!-- Plumbing Service -->
+                    @if($addon->plumbing)
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">Plumbing Services</div>
+                            <div class="line-item-right">${{ number_format($addon->plumbing_price ?? 0, 2) }}</div>
+                        </div>
+                        @php $addonTotal += $addon->plumbing_price ?? 0; @endphp
+                    @endif
+                    
+                    <!-- Demo Service -->
+                    @if($addon->demo)
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">Demo Service</div>
+                            <div class="line-item-right">${{ number_format($addon->demo_price ?? 0, 2) }}</div>
+                        </div>
+                        @php $addonTotal += $addon->demo_price ?? 0; @endphp
+                    @endif
+                    
+                    <!-- Vein Exact Match Service -->
+                    @if($addon->vein_exact_match)
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">Vein Exact Match</div>
+                            <div class="line-item-right">${{ number_format($addon->vein_exact_match_price ?? 0, 2) }}</div>
+                        </div>
+                        @php $addonTotal += $addon->vein_exact_match_price ?? 0; @endphp
+                    @endif
+                    
+                    <!-- Electrical Cutout Service -->
+                    @if($addon->electrical_cutout)
+                        @php
+                            $electricalUnitPrice = ($addon->electrical_cutout_price ?? 0);
+                            $electricalTotalCost = $electricalUnitPrice * ($addon->electrical_cutout_quantity ?? 1);
+                            $addonTotal += $electricalTotalCost;
+                        @endphp
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">{{ $addon->electrical_cutout_quantity ?? 1 }} - Electrical Cutout(s) @ ${{ number_format($electricalUnitPrice, 2) }} each</div>
+                            <div class="line-item-right">${{ number_format($electricalTotalCost, 2) }}</div>
+                        </div>
+                    @endif
+                    
+                    @php
+                        $areaAddonTotal += $addonTotal;
+                    @endphp
                 @endforeach
+                
+                @php
+                    $typeTotal += $areaAddonTotal;
+                    $grandTotal += $typeTotal;
+                @endphp
                 
                 <!-- Subtotal for this area -->
                 <div class="line-item subtotal clearfix">
@@ -352,31 +455,127 @@
             </div>
         @endforeach
         
-        <!-- Add sink costs not associated with specific areas -->
+        <!-- Addons not associated with specific areas -->
         @php
-            $unassignedSinks = $sinks->whereNotIn('sink_area', $takeoffsByType->keys());
-            $sinkTotal = $unassignedSinks->sum(function($sink) {
-                return $sink->price * ($sink->quantity ?? 1);
-            });
-            $grandTotal += $sinkTotal;
+            $unassignedAddons = $addons->whereNotIn('type', $takeoffsByType->keys());
+            $unassignedAddonTotal = 0;
         @endphp
         
-        @if($unassignedSinks->count() > 0)
+        @if($unassignedAddons->count() > 0)
             <div class="area-section">
-                <h4>Additional Sinks</h4>
+                <h4>Additional Items</h4>
                 
-                @foreach($unassignedSinks as $sink)
-                    <div class="line-item clearfix">
-                        <div class="line-item-left">{{ $sink->quantity ?? 1 }} - {{ $sink->model }} {{ $sink->brand }}</div>
-                        <div class="line-item-right">${{ number_format($sink->price * ($sink->quantity ?? 1), 2) }}</div>
-                    </div>
+                @foreach($unassignedAddons as $addon)
+                    @php
+                        $addonSubtotal = 0;
+                    @endphp
+                    
+                    <!-- Sink Details -->
+                    @if($addon->sink_model || $addon->sink_name)
+                        @php
+                            $sinkTotal = ($addon->sink_price ?? 0) * ($addon->sink_quantity ?? 1);
+                            $addonSubtotal += $sinkTotal;
+                            
+                            // Build sink description
+                            $sinkDescription = [];
+                            if($addon->sink_quantity && $addon->sink_quantity > 1) {
+                                $sinkDescription[] = $addon->sink_quantity;
+                            } else {
+                                $sinkDescription[] = '1';
+                            }
+                            
+                            if($addon->sink_name) {
+                                $sinkDescription[] = $addon->sink_name;
+                            }
+                            
+                            if($addon->sink_model) {
+                                $sinkDescription[] = $addon->sink_model;
+                            }
+                        @endphp
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">{{ implode(' - ', $sinkDescription) }}</div>
+                            <div class="line-item-right">${{ number_format($sinkTotal, 2) }}</div>
+                        </div>
+                    @endif
+                    
+                    <!-- Bracket Details -->
+                    @if($addon->bracket_model || $addon->bracket_name)
+                        @php
+                            $bracketTotal = ($addon->bracket_price ?? 0) * ($addon->bracket_quantity ?? 1);
+                            $addonSubtotal += $bracketTotal;
+                        @endphp
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">{{ $addon->bracket_quantity ?? 1 }} - {{ $addon->bracket_name ?? $addon->bracket_model }}</div>
+                            <div class="line-item-right">${{ number_format($bracketTotal, 2) }}</div>
+                        </div>
+                    @endif
+                    
+                    <!-- Services -->
+                    @if($addon->edge && $addon->edge_type)
+                        @php
+                            // For unassigned addons, we can't calculate LF from takeoffs
+                            // So we'll need to use a stored LF value or default to 0
+                            // You may need to add an edge_linear_feet field to your addons table
+                            $edgeLinearFeet = $addon->edge_linear_feet ?? 0; // Add this field or calculate differently
+                            $edgeTotalCost = ($addon->edge_price ?? 0) * $edgeLinearFeet;
+                            $addonSubtotal += $edgeTotalCost;
+                        @endphp
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">{{ number_format($edgeLinearFeet, 2) }} LF - {{ $addon->edge_type }} Edge @ ${{ number_format($addon->edge_price ?? 0, 2) }}/LF</div>
+                            <div class="line-item-right">${{ number_format($edgeTotalCost, 2) }}</div>
+                        </div>
+                    @endif
+                    
+                    @if($addon->plumbing)
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">Plumbing Services</div>
+                            <div class="line-item-right">${{ number_format($addon->plumbing_price ?? 0, 2) }}</div>
+                        </div>
+                        @php $addonSubtotal += $addon->plumbing_price ?? 0; @endphp
+                    @endif
+                    
+                    @if($addon->demo)
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">Demo Service</div>
+                            <div class="line-item-right">${{ number_format($addon->demo_price ?? 0, 2) }}</div>
+                        </div>
+                        @php $addonSubtotal += $addon->demo_price ?? 0; @endphp
+                    @endif
+                    
+                    @if($addon->vein_exact_match)
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">Vein Exact Match</div>
+                            <div class="line-item-right">${{ number_format($addon->vein_exact_match_price ?? 0, 2) }}</div>
+                        </div>
+                        @php $addonSubtotal += $addon->vein_exact_match_price ?? 0; @endphp
+                    @endif
+                    
+                    @if($addon->electrical_cutout)
+                        @php
+                            $electricalUnitPrice = ($addon->electrical_cutout_price ?? 0);
+                            $electricalTotalCost = $electricalUnitPrice * ($addon->electrical_cutout_quantity ?? 1);
+                            $addonSubtotal += $electricalTotalCost;
+                        @endphp
+                        <div class="line-item clearfix">
+                            <div class="line-item-left">{{ $addon->electrical_cutout_quantity ?? 1 }} - Electrical Cutout(s) @ ${{ number_format($electricalUnitPrice, 2) }} each</div>
+                            <div class="line-item-right">${{ number_format($electricalTotalCost, 2) }}</div>
+                        </div>
+                    @endif
+                    
+                    @php
+                        $unassignedAddonTotal += $addonSubtotal;
+                    @endphp
                 @endforeach
                 
                 <div class="line-item subtotal clearfix">
                     <div class="line-item-left">Subtotal</div>
-                    <div class="line-item-right">${{ number_format($sinkTotal, 2) }}</div>
+                    <div class="line-item-right">${{ number_format($unassignedAddonTotal, 2) }}</div>
                 </div>
             </div>
+            
+            @php
+                $grandTotal += $unassignedAddonTotal;
+            @endphp
         @endif
         
         <!-- Final total -->

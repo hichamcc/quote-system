@@ -6,6 +6,9 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PlaceTakeoffController;
 use App\Http\Controllers\PricingFactorController;
+use App\Http\Controllers\AddonController;
+use App\Http\Controllers\AreaTypeController;
+use App\Http\Controllers\MaterialController;
 
 use App\Http\Middleware\AdminMiddleware;
 
@@ -78,15 +81,54 @@ Route::middleware(['auth', \App\Http\Middleware\ProjectAccessMiddleware::class])
             ->name('projects.print-summary');
 
         Route::get('/projects/{id}/generate-pdf', [ProjectController::class, 'generatePdf'])->name('project.generate-pdf');
+
+
+        // Addon routes nested under projects
+        Route::prefix('projects/{project}')->name('projects.')->group(function () {
+            Route::resource('addons', AddonController::class)->except(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+            
+            // Custom nested resource routes for addons
+            Route::get('/addons', [AddonController::class, 'index'])->name('addons.index');
+            Route::get('/addons/create', [AddonController::class, 'create'])->name('addons.create');
+            Route::post('/addons', [AddonController::class, 'store'])->name('addons.store');
+            Route::get('/addons/{addon}', [AddonController::class, 'show'])->name('addons.show');
+            Route::get('/addons/{addon}/edit', [AddonController::class, 'edit'])->name('addons.edit');
+            Route::put('/addons/{addon}', [AddonController::class, 'update'])->name('addons.update');
+            Route::delete('/addons/{addon}', [AddonController::class, 'destroy'])->name('addons.destroy');
+        });
+
     });
 
     Route::middleware(['auth'])->group(function () {
-        Route::get('/pricing-factors', [PricingFactorController::class, 'index'])->name('pricing-factors.index');
-        Route::get('/pricing-factors/edit', [PricingFactorController::class, 'edit'])->name('pricing-factors.edit');
-        Route::put('/pricing-factors', [PricingFactorController::class, 'update'])->name('pricing-factors.update');
+        Route::get('pricing-factors', [PricingFactorController::class, 'index'])->name('pricing-factors.index');
+        Route::get('pricing-factors/edit', [PricingFactorController::class, 'edit'])->name('pricing-factors.edit');
+        Route::put('pricing-factors', [PricingFactorController::class, 'update'])->name('pricing-factors.update');
+        
+        // Edge Types management within pricing factors
+        Route::post('pricing-factors/edge-types', [PricingFactorController::class, 'storeEdgeType'])->name('pricing-factors.edge-types.store');
+        Route::put('pricing-factors/edge-types/{edgeType}', [PricingFactorController::class, 'updateEdgeType'])->name('pricing-factors.edge-types.update');
+        Route::delete('pricing-factors/edge-types/{edgeType}', [PricingFactorController::class, 'destroyEdgeType'])->name('pricing-factors.edge-types.destroy');
+    
+    });
+
+
+    // Area Types routes (separate page)
+        Route::middleware(['auth'])->group(function () {
+            Route::get('area-types', [AreaTypeController::class, 'index'])->name('area-types.index');
+            Route::post('area-types', [AreaTypeController::class, 'store'])->name('area-types.store');
+            Route::put('area-types/{areaType}', [AreaTypeController::class, 'update'])->name('area-types.update');
+            Route::delete('area-types/{areaType}', [AreaTypeController::class, 'destroy'])->name('area-types.destroy');
+        });
+
+        // Materials routes
+        Route::middleware(['auth'])->group(function () {
+            Route::get('materials', [MaterialController::class, 'index'])->name('materials.index');
+            Route::post('materials', [MaterialController::class, 'store'])->name('materials.store');
+            Route::put('materials/{material}', [MaterialController::class, 'update'])->name('materials.update');
+            Route::delete('materials/{material}', [MaterialController::class, 'destroy'])->name('materials.destroy');
+        });
 
         
-    });
 
             // Route to generate a share token
         Route::post('/projects/{id}/share', [ProjectController::class, 'generateShareLink'])->name('project.generate-share-link');

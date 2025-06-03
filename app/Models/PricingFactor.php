@@ -24,7 +24,28 @@ class PricingFactor extends Model
             'installation' => 'Installation',
             'overhead' => 'OH',
             'waste' => 'Waste',
-            'profit' => 'Profit'
+            'profit' => 'Profit',
+            // New service prices
+            'vein_exact_match' => 'Vein Exact Match',
+            'electrical_cutout' => 'Electrical Cutout',
+            'demo' => 'Demo'
         ];
+    }
+
+    // Get service prices specifically (for easy access in forms)
+    public static function getServicePrices()
+    {
+        return [
+            'vein_exact_match' => 'Vein Exact Match',
+            'electrical_cutout' => 'Electrical Cutout',
+            'demo' => 'Demo'
+        ];
+    }
+
+    // Helper method to get a service price for a specific customer type
+    public function getServicePrice($service, $customerType = 'residential')
+    {
+        $field = $customerType . '_' . $service;
+        return $this->$field ?? 0;
     }
 }

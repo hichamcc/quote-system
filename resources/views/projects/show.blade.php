@@ -237,7 +237,7 @@
                     </div>
 
                     <!-- Place Takeoffs Section -->
-                    <div class="mt-8">
+                    <div class="mt-8 p-2">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-900">Place Takeoffs</h3>
                             @if($project->placeTakeoffs->count() > 0)
@@ -263,9 +263,9 @@
                                         <thead class="bg-gray-50">
                                             <tr>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AMG Job#</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type </th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Piece #</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Length</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Width</th>
@@ -280,9 +280,9 @@
                                             @foreach($project->placeTakeoffs as $placeTakeoff)
                                                 <tr>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $placeTakeoff->amg_job_number }}</td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->type ?? 'N/A' }}</td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->material_name ?? 'N/A' }}</td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->supplier ?? 'N/A' }}</td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->area ?? 'N/A' }}</td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->piece_number ?? 'N/A' }}</td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->length ?? 'N/A' }}</td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $placeTakeoff->width ?? 'N/A' }}</td>
@@ -318,7 +318,7 @@
                     </div>
 
                     <!-- Sinks Section -->
-                    <div class="mt-8">
+                    <div class="hidden mt-8">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-900">Sinks</h3>
                             @if($project->sinks->count() > 0)
@@ -396,6 +396,142 @@
                         @endif
                     </div>
 
+                <!-- Addons Section -->
+                <div class="mt-8 p-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Addons</h3>
+                        @if($project->addons->count() > 0)
+                        <div>
+                            <a href="{{ route('projects.addons.create', $project) }}" class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Add Addons
+                            </a>
+                        </div>
+                        @else
+                            <a href="{{ route('projects.addons.create', $project) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                Add Addons
+                            </a>
+                        @endif
+                    </div>
+                    
+                    <!-- Addons summary -->
+                    @if($project->addons->count() > 0)
+                        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type/Area</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sink</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bracket</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Options</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach($project->addons as $addon)
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ $addon->type ?: 'N/A' }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    @if($addon->sink_name || $addon->sink_model || $addon->sink_price)
+                                                        <div>
+                                                            @if($addon->sink_name)
+                                                                <div class="font-medium">{{ $addon->sink_name }}</div>
+                                                            @endif
+                                                            @if($addon->sink_model)
+                                                                <div class="text-xs text-gray-500">{{ $addon->sink_model }}</div>
+                                                            @endif
+                                                            @if($addon->sink_quantity && $addon->sink_quantity > 1)
+                                                                <div class="text-xs text-blue-600">Qty: {{ $addon->sink_quantity }}</div>
+                                                            @endif
+                                                            @if($addon->sink_price)
+                                                                <div class="text-xs text-green-600">${{ number_format($addon->sink_price * ($addon->sink_quantity ?? 1), 2) }}</div>
+                                                            @endif
+                                                        </div>
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    @if($addon->bracket_name || $addon->bracket_model || $addon->bracket_price)
+                                                        <div>
+                                                            @if($addon->bracket_name)
+                                                                <div class="font-medium">{{ $addon->bracket_name }}</div>
+                                                            @endif
+                                                            @if($addon->bracket_model)
+                                                                <div class="text-xs text-gray-500">{{ $addon->bracket_model }}</div>
+                                                            @endif
+                                                            @if($addon->bracket_quantity && $addon->bracket_quantity > 1)
+                                                                <div class="text-xs text-blue-600">Qty: {{ $addon->bracket_quantity }}</div>
+                                                            @endif
+                                                            @if($addon->bracket_price)
+                                                                <div class="text-xs text-green-600">${{ number_format($addon->bracket_price * ($addon->bracket_quantity ?? 1), 2) }}</div>
+                                                            @endif
+                                                        </div>
+                                                    @else
+                                                        N/A
+                                                    @endif
+                                                </td>
+                                                <td class="px-6 py-4 text-sm text-gray-900">
+                                                    <div class="space-y-1">
+                                                        @if($addon->edge)
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                Edge {{ $addon->edge_type ? '(' . $addon->edge_type . ')' : '' }}: ${{ number_format($addon->edge_price ?? 0, 2) }}/LF
+                                                            </span>
+                                                        @endif
+                                                        @if($addon->plumbing)
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                                Plumbing: ${{ number_format($addon->plumbing_price ?? 0, 2) }}
+                                                                @if($addon->plumbing_details)
+                                                                    <span class="ml-1" title="{{ $addon->plumbing_details }}">ℹ️</span>
+                                                                @endif
+                                                            </span>
+                                                        @endif
+                                                        @if($addon->demo)
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                Demo: ${{ number_format($addon->demo_price ?? 0, 2) }}
+                                                            </span>
+                                                        @endif
+                                                        @if($addon->vein_exact_match)
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                                Vein Match: ${{ number_format($addon->vein_exact_match_price ?? 0, 2) }}
+                                                            </span>
+                                                        @endif
+                                                        @if($addon->electrical_cutout)
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                                {{ $addon->electrical_cutout_quantity }} Electrical: ${{ number_format($addon->electrical_cutout_price ?? 0, 2) }}/unit
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <div class="flex space-x-2">
+                                                        <a href="{{ route('projects.addons.show', [$project, $addon]) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                                        <a href="{{ route('projects.addons.edit', [$project, $addon]) }}" class="text-yellow-600 hover:text-yellow-900">Edit</a>
+                                                        <form method="POST" action="{{ route('projects.addons.destroy', [$project, $addon]) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this addon?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @else
+                        <div class="text-center py-4 text-gray-500 bg-gray-100 rounded">
+                            No addons added yet. 
+                            <a href="{{ route('projects.addons.create', $project) }}" class="text-indigo-600 hover:text-indigo-900">
+                                Add addons
+                            </a> 
+                            to specify additional components and services for this project.
+                        </div>
+                    @endif
+                </div>
                <!-- Calculations Summary Section -->
                     <div class="mt-8">
                         <div class="flex justify-between items-center mb-4">
@@ -597,442 +733,492 @@
                         </div>
                     </div>
 
-                    <!-- Pricing Calculation Section -->
-                    <div class="mt-8">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Project Pricing Calculation</h3>
-                        
-                        @php
-                         
-                            
-                            // Get all takeoffs grouped by type
-                            $takeoffsByType = $project->placeTakeoffs->groupBy('type');
-                            
-                            // Initialize totals
-                            $totalSqft = 0;
-                            $totalMaterialCost = 0;
-                            $totalFabricationCost = 0;
-                            $totalEdgePolishCost = 0;
-                            $totalMiterCost = 0;
-                            $totalSinkCutoutCost = 0;
-                            $totalCooktopCutoutCost = 0;
-                            $totalTemplateCost = 0;
-                            $totalInstallationCost = 0;
-                            $totalOverhead = 0;
-                            // Arrays to store calculations by type
-                            $calculations = [];
-                        @endphp
+              <!-- Pricing Calculation Section -->
+            <!-- Pricing Calculation Section -->
+            <div class="mt-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Project Pricing Calculation</h3>
+                
+                @php
+                    // Get all takeoffs grouped by type
+                    $takeoffsByType = $project->placeTakeoffs->groupBy('type');
+                    
+                    // Get all addons grouped by type
+                    $addonsByType = $project->addons->groupBy('type');
+                    
+                    // Initialize totals
+                    $totalSqft = 0;
+                    $totalMaterialCost = 0;
+                    $totalFabricationCost = 0;
+                    $totalEdgePolishCost = 0;
+                    $totalMiterCost = 0;
+                    $totalSinkCutoutCost = 0;
+                    $totalCooktopCutoutCost = 0;
+                    $totalTemplateCost = 0;
+                    $totalInstallationCost = 0;
+                    $totalOverhead = 0;
+                    $totalProfit = 0;
+                    $totalAddonsCost = 0;
+                    
+                    // Arrays to store calculations by type
+                    $calculations = [];
+                    
+                    // Get customer type for pricing calculations
+                    $customerType = $project->customer_type ?? 'residential';
+                @endphp
 
-                        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-                            <div class="px-4 py-5 sm:p-6">
-                               <!-- Pricing Calculation Table with Overhead Column -->
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SQFT</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fabrication</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edge Polish</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miter</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sink C/O</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cooktop C/O</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Template</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Install</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Overhead</th>
-                                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cost</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        @foreach($takeoffsByType as $type => $takeoffs)
-                                            @php
-                                                $typeTotalSqft = 0;
-                                                $typeTotalMaterialCost = 0;
-                                                $typeTotalFabricationCost = 0;
-                                                $typeTotalEdgePolishCost = 0;
-                                                $typeTotalMiterCost = 0;
-                                                $typeTotalSinkCutoutCost = 0;
-                                                $typeTotalCooktopCutoutCost = 0;
-                                                $typeTotalTemplateCost = 0;
-                                                $typeTotalInstallationCost = 0;
+                <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <!-- Pricing Calculation Table -->
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SQFT</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fabrication</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edge Polish</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miter</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sink C/O</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cooktop C/O</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Template</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Install</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Overhead</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Addons</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($takeoffsByType as $type => $takeoffs)
+                                    @php
+                                        // Calculate core service costs for this type
+                                        $typeData = [
+                                            'sqft' => 0,
+                                            'material' => 0,
+                                            'fabrication' => 0,
+                                            'edge_polish' => 0,
+                                            'miter' => 0,
+                                            'sink_cutout' => 0,
+                                            'cooktop_cutout' => 0,
+                                            'template' => 0,
+                                            'installation' => 0,
+                                            'addons' => 0
+                                        ];
+                                        
+                                        // Process takeoffs for this type
+                                        foreach($takeoffs as $takeoff) {
+                                            $sqft = calculateSqft($takeoff->length, $takeoff->width);
+                                            $typeData['sqft'] += $sqft;
+                                            $typeData['material'] += $sqft * $project->calculateSqftCost($takeoff->material_price ?? 0);
+                                            $typeData['fabrication'] += $project->calculateFabricationCost($sqft);
+                                            $typeData['edge_polish'] += $project->calculateEdgePolishCost(inchesToLinearFeet($takeoff->polished_edge_length));
+                                            $typeData['miter'] += $project->calculateMiterCost(inchesToLinearFeet($takeoff->miter_edge_length));
+                                            $typeData['sink_cutout'] += $project->calculateSinkCutoutCost($takeoff->sink_cutout ?? 0);
+                                            $typeData['cooktop_cutout'] += $project->calculateCooktopCutoutCost($takeoff->cooktop_cutout ?? 0);
+                                            $typeData['template'] += $project->calculateTemplateCost($sqft);
+                                            $typeData['installation'] += $project->calculateInstallationCost($sqft);
+                                        }
+                                        
+                                        // Calculate addons for this type
+                                        if (isset($addonsByType[$type])) {
+                                            foreach($addonsByType[$type] as $addon) {
+                                                $addonCost = 0;
                                                 
-                                                foreach($takeoffs as $takeoff) {
-                                                    $sqft = calculateSqft($takeoff->length, $takeoff->width);
-                                                    $typeTotalSqft += $sqft;
-                                                    
-                                                    $materialCost = $sqft * $project->calculateSqftCost($takeoff->material_price ?? 0);
-                                                    $typeTotalMaterialCost += $materialCost;
-                                                    
-                                                    $fabricationCost = $project->calculateFabricationCost($sqft);
-                                                    $typeTotalFabricationCost += $fabricationCost;
-                                                    
-                                                    $edgePolishCost = $project->calculateEdgePolishCost(inchesToLinearFeet($takeoff->polished_edge_length));
-                                                    $typeTotalEdgePolishCost += $edgePolishCost;
-                                                    
-                                                    $miterCost = $project->calculateMiterCost(inchesToLinearFeet($takeoff->miter_edge_length));
-                                                    $typeTotalMiterCost += $miterCost;
-                                                    
-                                                    $sinkCutoutCost = $project->calculateSinkCutoutCost($takeoff->sink_cutout ?? 0);
-                                                    $typeTotalSinkCutoutCost += $sinkCutoutCost;
-                                                    
-                                                    $cooktopCutoutCost = $project->calculateCooktopCutoutCost($takeoff->cooktop_cutout ?? 0);
-                                                    $typeTotalCooktopCutoutCost += $cooktopCutoutCost;
-                                                    
-                                                    $templateCost = $project->calculateTemplateCost($sqft);
-                                                    $typeTotalTemplateCost += $templateCost;
-                                                    
-                                                    $installationCost = $project->calculateInstallationCost($sqft);
-                                                    $typeTotalInstallationCost += $installationCost;
+                                                // Add sink costs
+                                                $addonCost += ($addon->sink_price ?? 0) * ($addon->sink_quantity ?? 1);
+                                                
+                                                // Add bracket costs
+                                                $addonCost += ($addon->bracket_price ?? 0) * ($addon->bracket_quantity ?? 1);
+                                                
+                                                // Add edge costs - multiply by polished edge linear feet only for this area type
+                                                if ($addon->edge && ($addon->edge_price ?? 0) > 0) {
+                                                    $polishedLinearFeet = 0;
+                                                    foreach($takeoffs as $takeoff) {
+                                                        $polishedLinearFeet += inchesToLinearFeet($takeoff->polished_edge_length ?? 0);
+                                                    }
+                                                    $addonCost += ($addon->edge_price ?? 0) * $polishedLinearFeet;
                                                 }
                                                 
-                                                $typeSubtotal = $typeTotalMaterialCost + $typeTotalFabricationCost + $typeTotalEdgePolishCost + 
-                                                            $typeTotalMiterCost + $typeTotalSinkCutoutCost + $typeTotalCooktopCutoutCost + 
-                                                            $typeTotalTemplateCost + $typeTotalInstallationCost;
-                                                    
-                                                // Calculate overhead for this type
-                                                $typeOverhead = $project->calculateOverhead($typeSubtotal);
+                                                // Add other service costs
+                                                $addonCost += ($addon->demo_price ?? 0);
+                                                $addonCost += ($addon->vein_exact_match_price ?? 0);
+                                                $addonCost += ($addon->electrical_cutout_price ?? 0) * ($addon->electrical_cutout_quantity ?? 1);
+                                                $addonCost += ($addon->plumbing_price ?? 0);
                                                 
-                                                // Calculate total cost (subtotal + overhead)
-                                                $typeTotalCost = $typeSubtotal + $typeOverhead;
-                                                    
-                                                // Add to global totals
-                                                $totalSqft += $typeTotalSqft;
-                                                $totalMaterialCost += $typeTotalMaterialCost;
-                                                $totalFabricationCost += $typeTotalFabricationCost;
-                                                $totalEdgePolishCost += $typeTotalEdgePolishCost;
-                                                $totalMiterCost += $typeTotalMiterCost;
-                                                $totalSinkCutoutCost += $typeTotalSinkCutoutCost;
-                                                $totalCooktopCutoutCost += $typeTotalCooktopCutoutCost;
-                                                $totalTemplateCost += $typeTotalTemplateCost;
-                                                $totalInstallationCost += $typeTotalInstallationCost;
-                                                $totalOverhead += $typeOverhead;
-                                                
-                                                // Store calculations for this type
-                                                $calculations[$type] = [
-                                                    'sqft' => $typeTotalSqft,
-                                                    'material' => $typeTotalMaterialCost,
-                                                    'fabrication' => $typeTotalFabricationCost,
-                                                    'edge_polish' => $typeTotalEdgePolishCost,
-                                                    'miter' => $typeTotalMiterCost,
-                                                    'sink_cutout' => $typeTotalSinkCutoutCost,
-                                                    'cooktop_cutout' => $typeTotalCooktopCutoutCost,
-                                                    'template' => $typeTotalTemplateCost,
-                                                    'installation' => $typeTotalInstallationCost,
-                                                    'subtotal' => $typeSubtotal,
-                                                    'overhead' => $typeOverhead,
-                                                    'total_cost' => $typeTotalCost
-                                                ];
-                                            @endphp
-                                            <tr class="{{ $loop->index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $type }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($typeTotalSqft, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalMaterialCost, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalFabricationCost, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalEdgePolishCost, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalMiterCost, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalSinkCutoutCost, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalCooktopCutoutCost, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalTemplateCost, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeTotalInstallationCost, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeSubtotal, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeOverhead, 2) }}</td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($typeTotalCost, 2) }}</td>
-                                            </tr>
-                                        @endforeach
+                                                $typeData['addons'] += $addonCost;
+                                            }
+                                        }
                                         
-                                        @php
-                                            $subtotal = $totalMaterialCost + $totalFabricationCost + $totalEdgePolishCost + 
-                                                    $totalMiterCost + $totalSinkCutoutCost + $totalCooktopCutoutCost + 
-                                                    $totalTemplateCost + $totalInstallationCost;
-                                                    
-                                            $overhead = $project->calculateOverhead($subtotal);
-                                            $totalCost = $subtotal + $overhead;
-                                            $profit = $project->calculateProfit($totalCost);
-                                            $total = $totalCost + $profit;
-                                            
-                                            // Add sink prices from sinks table
-                                            $totalSinkPrice = $project->sinks->sum(function($sink) {
-                                                return $sink->price * $sink->quantity;
-                                            });
-                                            
-                                            $grandTotal = $total + $totalSinkPrice;
-                                        @endphp
+                                        // Calculate core services subtotal
+                                        $typeData['subtotal'] = $typeData['material'] + $typeData['fabrication'] + $typeData['edge_polish'] + 
+                                                            $typeData['miter'] + $typeData['sink_cutout'] + $typeData['cooktop_cutout'] + 
+                                                            $typeData['template'] + $typeData['installation'];
                                         
-                                        <!-- Totals Row -->
-                                        <tr class="bg-gray-200">
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">TOTALS</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ number_format($totalSqft, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalMaterialCost, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalFabricationCost, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalEdgePolishCost, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalMiterCost, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalSinkCutoutCost, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalCooktopCutoutCost, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalTemplateCost, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalInstallationCost, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($subtotal, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($overhead, 2) }}</td>
-                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalCost, 2) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
-
-                                <!-- Price Per SQFT Analysis Cards -->
-                                <div class="mt-8">
-                                    <h4 class="text-md font-medium text-gray-900 mb-4">Price Analysis by Area Type</h4>
+                                        // Calculate overhead on core services
+                                        $typeData['overhead'] = $project->calculateOverhead($typeData['subtotal']);
+                                        
+                                        // Calculate profit on core services + overhead
+                                        $typeData['profit'] = $project->calculateProfit($typeData['subtotal'] + $typeData['overhead']);
+                                        
+                                        // Calculate final total
+                                        $typeData['total'] = $typeData['subtotal'] + $typeData['overhead'] + $typeData['profit'] + $typeData['addons'];
+                                        
+                                        // Add to global totals
+                                        $totalSqft += $typeData['sqft'];
+                                        $totalMaterialCost += $typeData['material'];
+                                        $totalFabricationCost += $typeData['fabrication'];
+                                        $totalEdgePolishCost += $typeData['edge_polish'];
+                                        $totalMiterCost += $typeData['miter'];
+                                        $totalSinkCutoutCost += $typeData['sink_cutout'];
+                                        $totalCooktopCutoutCost += $typeData['cooktop_cutout'];
+                                        $totalTemplateCost += $typeData['template'];
+                                        $totalInstallationCost += $typeData['installation'];
+                                        $totalOverhead += $typeData['overhead'];
+                                        $totalProfit += $typeData['profit'];
+                                        $totalAddonsCost += $typeData['addons'];
+                                        
+                                        // Store calculations for this type
+                                        $calculations[$type] = $typeData;
+                                    @endphp
                                     
-                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <tr class="{{ $loop->index % 2 === 0 ? 'bg-white' : 'bg-gray-50' }}">
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $type }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($typeData['sqft'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeData['material'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeData['fabrication'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeData['edge_polish'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeData['miter'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeData['sink_cutout'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeData['cooktop_cutout'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeData['template'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeData['installation'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeData['subtotal'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($typeData['overhead'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-green-600">${{ number_format($typeData['profit'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-blue-600">${{ number_format($typeData['addons'], 2) }}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($typeData['total'], 2) }}</td>
+                                    </tr>
+                                @endforeach
+                                
+                                @php
+                                    // Calculate project totals
+                                    $coreSubtotal = $totalMaterialCost + $totalFabricationCost + $totalEdgePolishCost + 
+                                                $totalMiterCost + $totalSinkCutoutCost + $totalCooktopCutoutCost + 
+                                                $totalTemplateCost + $totalInstallationCost;
+                                    $projectTotal = $coreSubtotal + $totalOverhead + $totalProfit + $totalAddonsCost;
+                                @endphp
+                                
+                                <!-- Project Totals Row -->
+                                <tr class="bg-gray-200 font-bold">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">TOTALS</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ number_format($totalSqft, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalMaterialCost, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalFabricationCost, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalEdgePolishCost, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalMiterCost, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalSinkCutoutCost, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalCooktopCutoutCost, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalTemplateCost, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalInstallationCost, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($coreSubtotal, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($totalOverhead, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-green-600">${{ number_format($totalProfit, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-blue-600">${{ number_format($totalAddonsCost, 2) }}</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${{ number_format($projectTotal, 2) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Price Analysis by Area Type -->
+                        <div class="mt-8">
+                            <h4 class="text-md font-medium text-gray-900 mb-4">Price Analysis by Area Type</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @php
+                                    $colorPalette = [
+                                        ['bg' => 'bg-yellow-50', 'header' => 'bg-yellow-200'],
+                                        ['bg' => 'bg-blue-50', 'header' => 'bg-blue-200'],
+                                        ['bg' => 'bg-purple-50', 'header' => 'bg-purple-200'],
+                                        ['bg' => 'bg-green-50', 'header' => 'bg-green-200'],
+                                        ['bg' => 'bg-indigo-50', 'header' => 'bg-indigo-200'],
+                                        ['bg' => 'bg-red-50', 'header' => 'bg-red-200'],
+                                        ['bg' => 'bg-orange-50', 'header' => 'bg-orange-200'],
+                                        ['bg' => 'bg-teal-50', 'header' => 'bg-teal-200'],
+                                        ['bg' => 'bg-pink-50', 'header' => 'bg-pink-200'],
+                                    ];
+                                    
+                                    $colorIndex = 0;
+                                @endphp
+                                
+                                @foreach($calculations as $type => $calc)
+                                    @if($calc['sqft'] > 0)
                                         @php
-                                            // Define a color palette that we can cycle through for different types
-                                            $colorPalette = [
-                                                ['bg' => 'bg-yellow-50', 'header' => 'bg-yellow-200'],
-                                                ['bg' => 'bg-blue-50', 'header' => 'bg-blue-200'],
-                                                ['bg' => 'bg-purple-50', 'header' => 'bg-purple-200'],
-                                                ['bg' => 'bg-green-50', 'header' => 'bg-green-200'],
-                                                ['bg' => 'bg-indigo-50', 'header' => 'bg-indigo-200'],
-                                                ['bg' => 'bg-red-50', 'header' => 'bg-red-200'],
-                                                ['bg' => 'bg-orange-50', 'header' => 'bg-orange-200'],
-                                                ['bg' => 'bg-teal-50', 'header' => 'bg-teal-200'],
-                                                ['bg' => 'bg-pink-50', 'header' => 'bg-pink-200'],
-                                                // Add more colors as needed
-                                            ];
-                                            
-                                            // Keep track of which types have been assigned colors
-                                            $typeColorMap = [];
-                                            $colorIndex = 0;
-                                        @endphp
-                                        
-                                        @foreach($calculations as $type => $calc)
-                                            @php
-                                                // Skip if no square footage
-                                                if ($calc['sqft'] <= 0) continue;
-                                                
-                                                // Calculate price per square foot
-                                                $pricePerSqft = $calc['total_cost'] / $calc['sqft'];
-                                                
-                                                // Calculate profit for this area
-                                                $areaProfit = $project->calculateProfit($calc['total_cost']);
-                                                
-                                                // Calculate price per square foot with profit
-                                                $pricePerSqftWithProfit = ($calc['total_cost'] + $areaProfit) / $calc['sqft'];
-                                                
-                                                // Assign a color to this type if it doesn't have one yet
-                                                if (!isset($typeColorMap[$type])) {
-                                                    $typeColorMap[$type] = $colorPalette[$colorIndex % count($colorPalette)];
-                                                    $colorIndex++;
-                                                }
-                                                
-                                                $cardColor = $typeColorMap[$type]['bg'];
-                                                $headerColor = $typeColorMap[$type]['header'];
-                                            @endphp
-                                            
-                                            <div class="rounded-lg shadow overflow-hidden">
-                                                <div class="{{ $headerColor }} px-4 py-2">
-                                                    <h5 class="font-medium text-gray-900">{{ $type }}</h5>
-                                                </div>
-                                                <div class="{{ $cardColor }} p-4">
-                                                    <div class="space-y-3">
-                                                        <div>
-                                                            <p class="text-sm text-gray-600">Total Area:</p>
-                                                            <p class="text-lg font-semibold">{{ number_format($calc['sqft'], 2) }} SQFT</p>
-                                                        </div>
-                                                        
-                                                        <div class="border-t pt-3">
-                                                            <p class="text-sm text-gray-600">Cost Breakdown:</p>
-                                                            <div class="grid grid-cols-2 gap-2 mt-2">
-                                                                <div class="text-right">
-                                                                    <p class="text-xs text-gray-500">Subtotal:</p>
-                                                                </div>
-                                                                <div>
-                                                                    <p class="text-xs font-medium">${{ number_format($calc['subtotal'], 2) }}</p>
-                                                                </div>
-                                                                
-                                                                <div class="text-right">
-                                                                    <p class="text-xs text-gray-500">Overhead ({{ $project->factor_overhead }}%):</p>
-                                                                </div>
-                                                                <div>
-                                                                    <p class="text-xs font-medium">${{ number_format($calc['overhead'], 2) }}</p>
-                                                                </div>
-                                                                
-                                                                <div class="text-right">
-                                                                    <p class="text-xs text-gray-500">Total Cost:</p>
-                                                                </div>
-                                                                <div>
-                                                                    <p class="text-xs font-medium">${{ number_format($calc['total_cost'], 2) }}</p>
-                                                                </div>
-                                                                
-                                                                <div class="text-right">
-                                                                    <p class="text-xs text-gray-500">Profit ({{ $project->factor_profit }}%):</p>
-                                                                </div>
-                                                                <div>
-                                                                    <p class="text-xs font-medium">${{ number_format($areaProfit, 2) }}</p>
-                                                                </div>
-                                                                
-                                                                <div class="text-right">
-                                                                    <p class="text-xs text-gray-500">Total with Profit:</p>
-                                                                </div>
-                                                                <div>
-                                                                    <p class="text-xs font-medium">${{ number_format($calc['total_cost'] + $areaProfit, 2) }}</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <div class="border-t pt-3 grid grid-cols-2 gap-4">
-                                                            <div>
-                                                                <p class="text-sm text-gray-600 mb-1">Price per SQFT:</p>
-                                                                <p class="text-xl font-bold text-indigo-600">${{ number_format($pricePerSqft, 2) }}</p>
-                                                                <p class="text-xs text-gray-500">Total Cost / SQFT</p>
-                                                            </div>
-                                                            
-                                                            <div>
-                                                                <p class="text-sm text-gray-600 mb-1">Retail Price per SQFT:</p>
-                                                                <p class="text-xl font-bold text-green-600">${{ number_format($pricePerSqftWithProfit, 2) }}</p>
-                                                                <p class="text-xs text-gray-500">With Profit</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                        
-                                        <!-- Overall Project Card -->
-                                        @php
-                                            // Calculate overall project metrics
-                                            $overallPricePerSqft = $totalSqft > 0 ? $totalCost / $totalSqft : 0;
-                                            $overallPricePerSqftWithProfit = $totalSqft > 0 ? ($totalCost + $profit) / $totalSqft : 0;
+                                            $colors = $colorPalette[$colorIndex++ % count($colorPalette)];
+                                            $corePrice = ($calc['subtotal'] + $calc['overhead'] + $calc['profit']) / $calc['sqft'];
+                                            $totalPrice = $calc['total'] / $calc['sqft'];
                                         @endphp
                                         
                                         <div class="rounded-lg shadow overflow-hidden">
-                                            <div class="bg-gray-700 text-white px-4 py-2">
-                                                <h5 class="font-medium">PROJECT OVERVIEW</h5>
+                                            <div class="{{ $colors['header'] }} px-4 py-2">
+                                                <h5 class="font-medium text-gray-900">{{ $type }}</h5>
                                             </div>
-                                            <div class="bg-gray-100 p-4">
+                                            <div class="{{ $colors['bg'] }} p-4">
                                                 <div class="space-y-3">
                                                     <div>
-                                                        <p class="text-sm text-gray-600">Total Project Area:</p>
-                                                        <p class="text-lg font-semibold">{{ number_format($totalSqft, 2) }} SQFT</p>
+                                                        <p class="text-sm text-gray-600">Total Area:</p>
+                                                        <p class="text-lg font-semibold">{{ number_format($calc['sqft'], 2) }} SQFT</p>
                                                     </div>
                                                     
                                                     <div class="border-t pt-3">
-                                                        <p class="text-sm text-gray-600">Project Pricing:</p>
-                                                        <div class="grid grid-cols-2 gap-2 mt-2">
-                                                            <div class="text-right">
-                                                                <p class="text-xs text-gray-500">Total Cost:</p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-xs font-medium">${{ number_format($totalCost, 2) }}</p>
-                                                            </div>
+                                                        <p class="text-sm text-gray-600">Cost Breakdown:</p>
+                                                        <div class="grid grid-cols-2 gap-2 mt-2 text-xs">
+                                                            <div class="text-right text-gray-500">Core Services:</div>
+                                                            <div class="font-medium">${{ number_format($calc['subtotal'], 2) }}</div>
                                                             
-                                                            <div class="text-right">
-                                                                <p class="text-xs text-gray-500">With Profit:</p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-xs font-medium">${{ number_format($totalCost + $profit, 2) }}</p>
-                                                            </div>
+                                                            <div class="text-right text-gray-500">Overhead:</div>
+                                                            <div class="font-medium">${{ number_format($calc['overhead'], 2) }}</div>
                                                             
-                                                            <div class="text-right">
-                                                                <p class="text-xs text-gray-500">With Sinks:</p>
-                                                            </div>
-                                                            <div>
-                                                                <p class="text-xs font-medium">${{ number_format($grandTotal, 2) }}</p>
-                                                            </div>
+                                                            <div class="text-right text-gray-500">Profit:</div>
+                                                            <div class="font-medium text-green-600">${{ number_format($calc['profit'], 2) }}</div>
+                                                            
+                                                            <div class="text-right text-blue-600">Addons:</div>
+                                                            <div class="font-medium text-blue-600">${{ number_format($calc['addons'], 2) }}</div>
+                                                            
+                                                            <div class="text-right text-gray-500">Total:</div>
+                                                            <div class="font-medium">${{ number_format($calc['total'], 2) }}</div>
                                                         </div>
                                                     </div>
                                                     
+                                                    <!-- Addons Details -->
+                                                    @if(isset($addonsByType[$type]) && count($addonsByType[$type]) > 0)
+                                                        <div class="border-t pt-3">
+                                                            <p class="text-sm text-blue-600 mb-2">Addons Details:</p>
+                                                            <div class="space-y-1 max-h-20 overflow-y-auto">
+                                                                @foreach($addonsByType[$type] as $addon)
+                                                                    <div class="text-xs bg-blue-100 rounded px-2 py-1">
+                                                                        @if($addon->sink_name)
+                                                                            <div>Sink: {{ $addon->sink_name }} 
+                                                                                @if($addon->sink_quantity > 1)({{ $addon->sink_quantity }}x)@endif - 
+                                                                                <span class="text-blue-600">${{ number_format(($addon->sink_price ?? 0) * ($addon->sink_quantity ?? 1), 2) }}</span>
+                                                                            </div>
+                                                                        @endif
+                                                                        @if($addon->bracket_name)
+                                                                            <div>Bracket: {{ $addon->bracket_name }} 
+                                                                                @if($addon->bracket_quantity > 1)({{ $addon->bracket_quantity }}x)@endif - 
+                                                                                <span class="text-blue-600">${{ number_format(($addon->bracket_price ?? 0) * ($addon->bracket_quantity ?? 1), 2) }}</span>
+                                                                            </div>
+                                                                        @endif
+                                                                        @if($addon->edge)
+                                                                            @php
+                                                                                // Calculate polished edge linear feet for this area type only
+                                                                                $polishedLinearFeet = 0;
+                                                                                if (isset($takeoffsByType[$type])) {
+                                                                                    foreach($takeoffsByType[$type] as $takeoff) {
+                                                                                        $polishedLinearFeet += inchesToLinearFeet($takeoff->polished_edge_length ?? 0);
+                                                                                    }
+                                                                                }
+                                                                                $edgeTotalCost = ($addon->edge_price ?? 0) * $polishedLinearFeet;
+                                                                            @endphp
+                                                                            <div>Edge ({{ $addon->edge_type }}): {{ number_format($polishedLinearFeet, 2) }} LF × ${{ number_format($addon->edge_price ?? 0, 2) }} = <span class="text-blue-600">${{ number_format($edgeTotalCost, 2) }}</span></div>
+                                                                        @endif
+                                                                        @if($addon->demo)
+                                                                            <div>Demo: <span class="text-blue-600">${{ number_format($addon->demo_price ?? 0, 2) }}</span></div>
+                                                                        @endif
+                                                                        @if($addon->vein_exact_match)
+                                                                            <div>Vein Match: <span class="text-blue-600">${{ number_format($addon->vein_exact_match_price ?? 0, 2) }}</span></div>
+                                                                        @endif
+                                                                        @if($addon->electrical_cutout)
+                                                                            <div>Electrical ({{ $addon->electrical_cutout_quantity }}x): {{ $addon->electrical_cutout_quantity }} × ${{ number_format(($addon->electrical_cutout_price ?? 0) ) }} = <span class="text-blue-600">${{ number_format(($addon->electrical_cutout_price ?? 0) * ($addon->electrical_cutout_quantity ?? 1), 2) }}</span></div>
+                                                                        @endif
+                                                                        @if($addon->plumbing)
+                                                                            <div>Plumbing: <span class="text-blue-600">${{ number_format($addon->plumbing_price ?? 0, 2) }}</span></div>
+                                                                        @endif
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                    
                                                     <div class="border-t pt-3 grid grid-cols-2 gap-4">
                                                         <div>
-                                                            <p class="text-sm text-gray-600 mb-1">Average Price per SQFT:</p>
-                                                            <p class="text-xl font-bold text-indigo-600">${{ number_format($overallPricePerSqft, 2) }}</p>
-                                                            <p class="text-xs text-gray-500">Total Cost / SQFT</p>
+                                                            <p class="text-sm text-gray-600 mb-1">Core Price/SQFT:</p>
+                                                            <p class="text-xl font-bold text-indigo-600">${{ number_format($corePrice, 2) }}</p>
+                                                            <p class="text-xs text-gray-500">Base + OH + Profit</p>
                                                         </div>
                                                         
                                                         <div>
-                                                            <p class="text-sm text-gray-600 mb-1">Retail Price per SQFT:</p>
-                                                            <p class="text-xl font-bold text-green-600">${{ number_format($overallPricePerSqftWithProfit, 2) }}</p>
-                                                            <p class="text-xs text-gray-500">With Profit</p>
+                                                            <p class="text-sm text-gray-600 mb-1">Total Price/SQFT:</p>
+                                                            <p class="text-xl font-bold text-green-600">${{ number_format($totalPrice, 2) }}</p>
+                                                            <p class="text-xs text-gray-500">Including Addons</p>
                                                         </div>
                                                     </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+                                
+                                <!-- Overall Project Card -->
+                                @php
+                                    $overallCorePrice = $totalSqft > 0 ? ($coreSubtotal + $totalOverhead + $totalProfit) / $totalSqft : 0;
+                                    $overallTotalPrice = $totalSqft > 0 ? $projectTotal / $totalSqft : 0;
+                                @endphp
+                                
+                                <div class="rounded-lg shadow overflow-hidden">
+                                    <div class="bg-gray-700 text-white px-4 py-2">
+                                        <h5 class="font-medium">PROJECT OVERVIEW</h5>
+                                    </div>
+                                    <div class="bg-gray-100 p-4">
+                                        <div class="space-y-3">
+                                            <div>
+                                                <p class="text-sm text-gray-600">Total Project Area:</p>
+                                                <p class="text-lg font-semibold">{{ number_format($totalSqft, 2) }} SQFT</p>
+                                            </div>
+                                            
+                                            <div class="border-t pt-3">
+                                                <p class="text-sm text-gray-600">Project Pricing:</p>
+                                                <div class="grid grid-cols-2 gap-2 mt-2 text-xs">
+                                                    <div class="text-right text-gray-500">Core Services:</div>
+                                                    <div class="font-medium">${{ number_format($coreSubtotal, 2) }}</div>
+                                                    
+                                                    <div class="text-right text-gray-500">Overhead:</div>
+                                                    <div class="font-medium">${{ number_format($totalOverhead, 2) }}</div>
+                                                    
+                                                    <div class="text-right text-gray-500">Profit:</div>
+                                                    <div class="font-medium text-green-600">${{ number_format($totalProfit, 2) }}</div>
+                                                    
+                                                    <div class="text-right text-blue-600">Addons:</div>
+                                                    <div class="font-medium text-blue-600">${{ number_format($totalAddonsCost, 2) }}</div>
+                                                    
+                                                    <div class="text-right text-gray-500">Final Total:</div>
+                                                    <div class="font-medium">${{ number_format($projectTotal, 2) }}</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="border-t pt-3 grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p class="text-sm text-gray-600 mb-1">Core Price/SQFT:</p>
+                                                    <p class="text-xl font-bold text-indigo-600">${{ number_format($overallCorePrice, 2) }}</p>
+                                                    <p class="text-xs text-gray-500">Base + OH + Profit</p>
+                                                </div>
+                                                
+                                                <div>
+                                                    <p class="text-sm text-gray-600 mb-1">Total Price/SQFT:</p>
+                                                    <p class="text-xl font-bold text-green-600">${{ number_format($overallTotalPrice, 2) }}</p>
+                                                    <p class="text-xs text-gray-500">Including Addons</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Final Calculation Summary -->
-                                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    <div class="col-span-2 hidden">
-                                        <h4 class="text-md font-medium text-gray-900 mb-2">Calculation Factors ({{ ucfirst($project->project_type) }})</h4>
-                                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                            <div class="p-3 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-600">Fabrication:</span>
-                                                <p class="font-medium">${{ $project->factor_fabrication }}</p>
-                                            </div>
-                                            <div class="p-3 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-600">Edge Polish:</span>
-                                                <p class="font-medium">${{ $project->factor_edge_polish }}</p>
-                                            </div>
-                                            <div class="p-3 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-600">Miter:</span>
-                                                <p class="font-medium">${{ $project->factor_miter }}</p>
-                                            </div>
-                                            <div class="p-3 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-600">Sink C/O:</span>
-                                                <p class="font-medium">${{ $project->factor_sink_cutout }}</p>
-                                            </div>
-                                            <div class="p-3 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-600">Cooktop C/O:</span>
-                                                <p class="font-medium">${{ $project->factor_cooktop_cutout }}</p>
-                                            </div>
-                                            <div class="p-3 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-600">Template:</span>
-                                                <p class="font-medium">${{ $project->factor_template }}</p>
-                                            </div>
-                                            <div class="p-3 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-600">Installation:</span>
-                                                <p class="font-medium">${{ $project->factor_installation }}</p>
-                                            </div>
-                                            <div class="p-3 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-600">Waste:</span>
-                                                <p class="font-medium">{{ $project->factor_waste }}%</p>
-                                            </div>
-                                            <div class="p-3 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-600">Overhead:</span>
-                                                <p class="font-medium">{{ $project->factor_overhead }}%</p>
-                                            </div>
-                                            <div class="p-3 bg-gray-50 rounded">
-                                                <span class="text-sm text-gray-600">Profit:</span>
-                                                <p class="font-medium">{{ $project->factor_profit }}%</p>
-                                            </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Final Pricing Summary -->
+                        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="col-span-2">
+                                <h4 class="text-md font-medium text-gray-900 mb-4">Addons Summary</h4>
+                                <div class="bg-blue-50 rounded-lg p-4">
+                                    @php
+                                        $addonCategories = [
+                                            'sinks' => 0,
+                                            'brackets' => 0,
+                                            'edge_services' => 0,
+                                            'other_services' => 0
+                                        ];
+                                        
+                                        foreach($project->addons as $addon) {
+                                            $addonCategories['sinks'] += ($addon->sink_price ?? 0) * ($addon->sink_quantity ?? 1);
+                                            $addonCategories['brackets'] += ($addon->bracket_price ?? 0) * ($addon->bracket_quantity ?? 1);
+                                            
+                                            // Calculate edge services with correct linear feet pricing
+                                            if ($addon->edge && ($addon->edge_price ?? 0) > 0) {
+                                                // Find the area type for this addon and calculate polished edge LF
+                                                $addonAreaType = $addon->type;
+                                                $polishedLinearFeet = 0;
+                                                
+                                                if (isset($takeoffsByType[$addonAreaType])) {
+                                                    foreach($takeoffsByType[$addonAreaType] as $takeoff) {
+                                                        $polishedLinearFeet += inchesToLinearFeet($takeoff->polished_edge_length ?? 0);
+                                                    }
+                                                }
+                                                
+                                                $addonCategories['edge_services'] += ($addon->edge_price ?? 0) * $polishedLinearFeet;
+                                            }
+                                            
+                                            $addonCategories['other_services'] += ($addon->demo_price ?? 0) + 
+                                                                                ($addon->vein_exact_match_price ?? 0) + 
+                                                                                (($addon->electrical_cutout_price ?? 0) * ($addon->electrical_cutout_quantity ?? 1)) + 
+                                                                                ($addon->plumbing_price ?? 0);
+                                        }
+                                    @endphp
+                                    
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="p-3 bg-white rounded border-l-4 border-blue-500">
+                                            <span class="text-sm text-gray-600">Sinks:</span>
+                                            <p class="font-bold text-lg">${{ number_format($addonCategories['sinks'], 2) }}</p>
+                                        </div>
+                                        
+                                        <div class="p-3 bg-white rounded border-l-4 border-green-500">
+                                            <span class="text-sm text-gray-600">Brackets:</span>
+                                            <p class="font-bold text-lg">${{ number_format($addonCategories['brackets'], 2) }}</p>
+                                        </div>
+                                        
+                                        <div class="p-3 bg-white rounded border-l-4 border-purple-500">
+                                            <span class="text-sm text-gray-600">Edge Services:</span>
+                                            <p class="font-bold text-lg">${{ number_format($addonCategories['edge_services'], 2) }}</p>
+                                        </div>
+                                        
+                                        <div class="p-3 bg-white rounded border-l-4 border-orange-500">
+                                            <span class="text-sm text-gray-600">Other Services:</span>
+                                            <p class="font-bold text-lg">${{ number_format($addonCategories['other_services'], 2) }}</p>
                                         </div>
                                     </div>
                                     
-                                    <div>
-                                        <h4 class="text-md font-medium text-gray-900 mb-2">Final Price</h4>
-                                        <div class="bg-gray-50 rounded p-4">
-                                            <div class="flex justify-between border-b py-2">
-                                                <span>Subtotal:</span>
-                                                <span>${{ number_format($subtotal, 2) }}</span>
+                                    <div class="mt-4 p-3 bg-blue-200 rounded">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm font-medium text-blue-900">Total Addons:</span>
+                                            <span class="text-xl font-bold text-blue-900">${{ number_format($totalAddonsCost, 2) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-md font-medium text-gray-900 mb-2">Final Project Price</h4>
+                                <div class="bg-gray-50 rounded p-4">
+                                    <div class="flex justify-between border-b py-2">
+                                        <span>Core Services:</span>
+                                        <span>${{ number_format($coreSubtotal, 2) }}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b py-2">
+                                        <span>Overhead ({{ $project->factor_overhead }}%):</span>
+                                        <span>${{ number_format($totalOverhead, 2) }}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b py-2">
+                                        <span>Profit ({{ $project->factor_profit }}%):</span>
+                                        <span class="text-green-600">${{ number_format($totalProfit, 2) }}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b py-2">
+                                        <span class="text-blue-600">Addons/Sinks:</span>
+                                        <span class="text-blue-600">${{ number_format($totalAddonsCost, 2) }}</span>
+                                    </div>
+                                    <div class="flex justify-between font-bold text-lg py-2 bg-green-100 rounded px-2">
+                                        <span>FINAL TOTAL:</span>
+                                        <span class="text-green-600">${{ number_format($projectTotal, 2) }}</span>
+                                    </div>
+                                    
+                                    <!-- Price per SQFT Summary -->
+                                    <div class="mt-4 pt-4 border-t">
+                                        <div class="grid grid-cols-2 gap-4 text-center">
+                                            <div class="bg-indigo-100 rounded p-3">
+                                                <p class="text-xs text-indigo-600 mb-1">Core/SQFT</p>
+                                                <p class="text-lg font-bold text-indigo-800">${{ number_format($overallCorePrice, 2) }}</p>
                                             </div>
-                                            <div class="flex justify-between border-b py-2">
-                                                <span>Overhead ({{ $project->factor_overhead }}%):</span>
-                                                <span>${{ number_format($overhead, 2) }}</span>
-                                            </div>
-                                            <div class="flex justify-between border-b py-2">
-                                                <span>Total Cost:</span>
-                                                <span>${{ number_format($totalCost, 2) }}</span>
-                                            </div>
-                                            <div class="flex justify-between border-b py-2">
-                                                <span>Profit ({{ $project->factor_profit }}%):</span>
-                                                <span>${{ number_format($profit, 2) }}</span>
-                                            </div>
-                                            <div class="flex justify-between border-b py-2">
-                                                <span>Sinks:</span>
-                                                <span>${{ number_format($totalSinkPrice, 2) }}</span>
-                                            </div>
-                                            <div class="flex justify-between font-bold text-lg py-2">
-                                                <span>GRAND TOTAL:</span>
-                                                <span>${{ number_format($grandTotal, 2) }}</span>
+                                            <div class="bg-green-100 rounded p-3">
+                                                <p class="text-xs text-green-600 mb-1">Total/SQFT</p>
+                                                <p class="text-lg font-bold text-green-800">${{ number_format($overallTotalPrice, 2) }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -1040,7 +1226,8 @@
                             </div>
                         </div>
                     </div>
-
+                </div>
+            </div>
                     <div class="mt-8 flex space-x-3">
                         <a href="{{ route('projects.edit', $project) }}" class="inline-flex items-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700 active:bg-yellow-900 focus:outline-none focus:border-yellow-900 focus:ring ring-yellow-300 disabled:opacity-25 transition ease-in-out duration-150">
                             Edit Project

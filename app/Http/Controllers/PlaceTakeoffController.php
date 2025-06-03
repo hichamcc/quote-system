@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\PlaceTakeoff;
+use App\Models\AreaType;
 use App\Models\Top;
 use App\Models\Backsplash;
 use Illuminate\Http\Request;
@@ -16,7 +17,9 @@ class PlaceTakeoffController extends Controller
      */
     public function create(Project $project)
     {
-        return view('place-takeoffs.create', compact('project'));
+        $areaTypes = AreaType::latest()->get();
+
+        return view('place-takeoffs.create', compact('project','areaTypes'));
     }
 
     /**
@@ -97,9 +100,13 @@ class PlaceTakeoffController extends Controller
             ->with('error', 'The specified takeoff does not belong to this project.');
     }
 
+    $areaTypes = AreaType::latest()->get();
+
+
     return view('place-takeoffs.edit', [
         'project' => $project,
-        'placeTakeoff' => $takeoff
+        'placeTakeoff' => $takeoff,
+        'areaTypes'=> $areaTypes
     ]);
 }
 

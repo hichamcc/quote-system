@@ -28,6 +28,12 @@
                     <x-navlist.item before="phosphor-list" :href="route('pricing-factors.index')" :current="request()->routeIs('pricing-factors.index')">
                         {{ __('Pricing factors') }}
                     </x-navlist.item>
+                    <x-navlist.item before="phosphor-list" :href="route('area-types.index')" :current="request()->routeIs('area-types.index')">
+                        {{ __('Area type list') }}
+                    </x-navlist.item>
+                    <x-navlist.item before="phosphor-list" :href="route('materials.index')" :current="request()->routeIs('materials.index')">
+                        {{ __('Material list') }}
+                    </x-navlist.item>
                 </x-navlist.group>
                 
             </x-navlist>

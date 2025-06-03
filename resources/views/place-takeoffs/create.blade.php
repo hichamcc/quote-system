@@ -41,10 +41,11 @@
                                         <x-label for="types_0">Section Type</x-label>
                                         <select id="types_0" name="types[]" class="rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full">
                                             <option value="">Select a type</option>
-                                            <option value="Kitchen" {{ old('types.0') == 'Kitchen' ? 'selected' : '' }}>Kitchen</option>
-                                            <option value="Bathroom" {{ old('types.0') == 'Bathroom' ? 'selected' : '' }}>Bathroom</option>
-                                            <option value="Master Bath" {{ old('types.0') == 'Master Bath' ? 'selected' : '' }}>Master Bath</option>
-                                            <option value="Common Area" {{ old('types.0') == 'Common Area' ? 'selected' : '' }}>Common Area</option>
+                                            @foreach($areaTypes as $areaType)
+                                                <option value="{{ $areaType->name }}" {{ old('types.0') == $areaType->name ? 'selected' : '' }}>
+                                                    {{ $areaType->name }}
+                                                </option>
+                                            @endforeach
                                         </select>
                                         @error('types.0')
                                             <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
